@@ -17,23 +17,16 @@ router.beforeEach(async (to, from, next) => {
 	// set page title
 	document.title = getPageTitle(to.meta.title)
 
-	// determine whether the user has logged in
-	const isLogin = checkSymbol()
-
+	//判断用户是否登录 & 判断用户信息是否丢失
+	const isLogin = checkSymbol() && JSON.stringify(store.state.user.userInfo) != '{}'
+	
 	if (isLogin) {
 		if (to.path === '/login') {
 			// if is logged in, redirect to the home page
 			next({ path: '/' })
 			NProgress.done()
 		} else {
-			//判断用户是否登录
-			const hasGetUserInfo = JSON.stringify(store.state.user.userInfo) != '{}'
-			if (hasGetUserInfo) {
-				next()
-			} else {
-				next(`/login?redirect=${to.path}`)
-				NProgress.done()
-			}
+			next()
 		}
 	} else {
 		/* has no token*/

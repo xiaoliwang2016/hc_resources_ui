@@ -64,7 +64,6 @@
 
 <script>
 import { validUsername } from "@/utils/validate"
-import { store } from 'vuex'
 
 export default {
   name: "Login",

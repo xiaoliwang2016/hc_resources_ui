@@ -55,34 +55,66 @@ export const constantRoutes = [
 		}]
 	},
 
-	{
-		path: '/example',
-		component: Layout,
-		redirect: '/example/table',
-		name: 'Example',
-		meta: { title: 'Example', icon: 'example' },
-		children: [
-			{
-				path: 'table',
-				name: 'Table',
-				component: () => import('@/views/table/index'),
-				meta: { title: 'Table', icon: 'table' }
-			}
-		]
-	},
+	// {
+	// 	path: '/example',
+	// 	component: Layout,
+	// 	redirect: '/example/table',
+	// 	name: 'Example',
+	// 	meta: { title: 'Example', icon: 'example' },
+	// 	children: [
+	// 		{
+	// 			path: 'table',
+	// 			name: 'Table',
+	// 			component: () => import('@/views/table/index'),
+	// 			meta: { title: 'Table', icon: 'table' }
+	// 		}
+	// 	]
+	// },
 
 	{
-		path: '/form',
+		path: '/menu',
+		name: 'Menu',
 		component: Layout,
+		redirect: '/menu/resources',
+		meta: { title: '菜单', icon: 'form' },
 		children: [
 			{
-				path: 'index',
-				name: 'Form',
-				component: () => import('@/views/form/index'),
-				meta: { title: 'Form', icon: 'form' }
+				path: 'resources',
+				component: () => import('@/views/resources/configuration/index'),
+				name: 'Resources',
+				meta: { title: '菜单设置' },
+				children: [
+					{
+						path: 'configuration',
+						component: () => import('@/views/resources/configuration/configuration'),
+						name: 'Configuration',
+						meta: { title: '自定义菜单' }
+					}
+				],
+			},
+			{
+				path: 'permission',
+				component: () => import('@/views/resources/permission/index'),
+				name: 'Permission',
+				meta: { title: '权限设置' },
+				children: [
+					{
+						path: 'role',
+						component: () => import('@/views/resources/permission/role'),
+						name: 'Role',
+						meta: { title: '角色管理' }
+					},
+					{
+						path: 'user',
+						component: () => import('@/views/resources/permission/user'),
+						name: 'User',
+						meta: { title: '用户管理' }
+					}
+				],
 			}
 		]
 	},
+	
 	
 	// 404 page must be placed at the end !!!
 	{ path: '*', redirect: '/404', hidden: true }

@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout } from '@/api/user'
 import { checkSymbol, setSymbol, removeSymbol } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
@@ -53,7 +53,8 @@ const actions = {
 	// remove token
 	resetToken({ commit }) {
 		return new Promise(resolve => {
-			commit('SET_TOKEN', '')
+			commit('SET_USER_INFO', {})
+			commit('SET_THEME_INFO', {})
 			removeSymbol()
 			resolve()
 		})
