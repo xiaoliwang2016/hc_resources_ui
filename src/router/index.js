@@ -55,22 +55,6 @@ export const constantRoutes = [
 		}]
 	},
 
-	// {
-	// 	path: '/example',
-	// 	component: Layout,
-	// 	redirect: '/example/table',
-	// 	name: 'Example',
-	// 	meta: { title: 'Example', icon: 'example' },
-	// 	children: [
-	// 		{
-	// 			path: 'table',
-	// 			name: 'Table',
-	// 			component: () => import('@/views/table/index'),
-	// 			meta: { title: 'Table', icon: 'table' }
-	// 		}
-	// 	]
-	// },
-
 	{
 		path: '/menu',
 		name: 'Menu',
@@ -109,6 +93,11 @@ export const constantRoutes = [
 						component: () => import('@/views/resources/permission/user'),
 						name: 'User',
 						meta: { title: '用户管理' }
+					},
+					{
+						path: 'roleAuth',
+						component: () => import('@/views/resources/permission/roleAuth'),
+						name: 'RoleAuth'
 					}
 				],
 			}

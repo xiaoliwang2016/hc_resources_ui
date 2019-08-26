@@ -34,6 +34,9 @@
             <el-table-column
                 prop="update_time"
                 label="添加时间">
+                <template slot-scope="scope">
+                    {{parseTime(scope.row.update_time)}}
+                </template>
             </el-table-column>
             <el-table-column
                 fixed="right"
@@ -41,7 +44,7 @@
                 width="180">
                 <template slot-scope="scope">
                     <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                    <el-button @click="handleClick(scope.row)" type="text" size="small">权限设置</el-button>
+                    <el-button @click="toAuthorize(scope.row)" type="text" size="small">权限设置</el-button>
                     <el-button type="text" size="small">编辑</el-button>
                 </template>
             </el-table-column>
@@ -72,6 +75,7 @@
 </template>
 <script>
 import * as api from '@/api/role'
+import { parseTime } from '@/utils/index'
 export default {
     name: 'Role',
     data(){
@@ -90,6 +94,7 @@ export default {
     },
 
     methods: {
+        parseTime,
         render(){
             return new Promise(resolve => {
                 api.listRole({
@@ -111,6 +116,7 @@ export default {
             }
             this.dialogFormVisible = true
         },
+
         /**
          * 创建角色
          */
@@ -137,6 +143,16 @@ export default {
 						type: 'success'
                     })
                 })
+            })
+        },
+
+        toAuthorize(roleInfo){
+            this.$router.push({
+                path: '/menu/permission/roleAuth',
+                query: {
+                    id: roleInfo.id,
+                    name: roleInfo.role_name
+                }
             })
         }
     }
