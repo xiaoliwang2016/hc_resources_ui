@@ -9,7 +9,14 @@
 					<span class="grid">菜单类型</span>
 					<span class="grid">启用</span>
 					<span class="grid">公开</span>
-					<span class="btn-group">操作</span>
+					<span class="btn-group">
+						<el-button
+							type="success"
+							size="mini"
+							@click="() => createResources({type: 0, id: 0})">
+							创建一级菜单
+						</el-button>
+					</span>
 				</div>
 				<el-tree
 					:data="resourcesList"
@@ -246,7 +253,18 @@ export default {
 				public: 0,
 				pid: data.id
 			}
-			this.layerTitle = data.menu_title + '：' + ( data.type == 1 ? '添加二级菜单' : '添加三级菜单' )
+			switch(data.type){
+				case 0:
+					this.layerTitle = '添加一级菜单'
+					break;
+				case 1:
+					this.layerTitle = data.menu_title + '：添加二级菜单'
+					break;
+				case 2:
+					this.layerTitle = data.menu_title + '：添加三级菜单'
+					break;
+			}
+			
 			this.operation = 'create'
 			this.dialogVisible = true
 		},
@@ -298,7 +316,7 @@ export default {
 
 }
 .tree-head{
-	height: 30px;
+	height: 40px;
 	border-bottom: 1px solid #eee;
 	margin-bottom: 10px;
 }
