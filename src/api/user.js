@@ -38,3 +38,27 @@ export function updateUser(data){
 		data
 	})
 }
+
+export function getResourcesByUserId(params){
+	return request({
+		url: '/admin/user/listResources',
+		method: 'get',
+		params
+	})
+}
+
+export function getRolesByUserId(params){
+	return request({
+		url: '/admin/user/listRole',
+		method: 'get',
+		params
+	})
+}
+
+export function getThemeByUserId(params){
+	return request({
+		url: '/home/user/listTheme',
+		method: 'get',
+		params
+	})
+}

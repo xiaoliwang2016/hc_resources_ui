@@ -8,10 +8,34 @@ export function listRole(params){
     })
 }
 
-export function addRole(data){
+export function addOrUpdateRole(data){
     return request({
-        url: '/admin/role/add',
+        url: '/admin/role/addOrUpdate',
         method: 'post',
         data
+    })
+}
+
+export function getResourcesByRoleId(params){
+    return request({
+        url: '/admin/role/listResources',
+        method: 'get',
+        params
+    })
+}
+
+export function assignRoleToUser(data){
+    return request({
+        url: '/admin/role/assignToUser',
+        method: 'post',
+        data
+    })
+}
+
+export function listUserByRoleId(){
+    return request({
+        url: '/admin/role/listUser',
+        method: 'get',
+        params
     })
 }

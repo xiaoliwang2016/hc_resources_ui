@@ -1,15 +1,13 @@
 import Cookies from 'js-cookie'
 
-const TokenKey = 'login_symbol'
-
-export function checkSymbol() {
-  return Cookies.get(TokenKey) == '1'
+export function checkSymbol(key) {
+  return Cookies.get(key) == '1'
 }
 
-export function setSymbol() {
-  return Cookies.set(TokenKey, '1')
+export function setSymbol(key) {
+  return Cookies.set(key, '1')
 }
 
-export function removeSymbol() {
-  return Cookies.remove(TokenKey)
+export function removeSymbol(key) {
+  return Cookies.remove(key)
 }

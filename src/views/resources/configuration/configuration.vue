@@ -129,7 +129,6 @@
 
 <script>
 import * as api from '@/api/resources'
-import { Promise } from 'q';
 
 export default {
 	name: 'Configuration',
@@ -170,7 +169,8 @@ export default {
 		render(){
 			return new Promise(resolve => {
 				api.getResourcesTree({
-					theme_id: this.$store.state.user.themeInfo.id
+					theme_id: this.$store.state.admin.themeInfo.id,
+					tree: 1
 				}).then(list => {
 					this.resourcesList = list.data
 					resolve()
@@ -192,8 +192,8 @@ export default {
 						var data = {
 							...this.resourcesForm,
 							public: this.resourcesForm.public ? 1 : 0,
-							user_id: this.$store.state.user.userInfo.id,
-							theme_id: this.$store.state.user.themeInfo.id
+							user_id: this.$store.state.admin.userInfo.id,
+							theme_id: this.$store.state.admin.themeInfo.id
 						}
 						api.addResources(data).then(res => {
 							this.dialogVisible = false
@@ -222,7 +222,6 @@ export default {
 							this.loading.close()
 						})
 					}
-
 				} else {
 					this.$message({
 						message: '菜单创建失败',
@@ -232,12 +231,14 @@ export default {
 				}
 			})
 		},
+
 		/**
 		 * 重置表单
 		 */
 		resetForm(formName) {
 			this.$refs[formName].resetFields()
 		},
+		
 		/**
 		 * 创建菜单
 		 */
@@ -311,9 +312,6 @@ export default {
 .tips{
 	background-color: rgb(198, 226, 255);
 	line-height: 50px;
-}
-.form{
-
 }
 .tree-head{
 	height: 40px;

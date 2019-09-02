@@ -1,6 +1,6 @@
 import router from './router'
 import store from './store'
-import { Message } from 'element-ui'
+import { Message, TabPane } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { checkSymbol } from '@/utils/auth' // get token from cookie
@@ -16,11 +16,14 @@ router.beforeEach(async (to, from, next) => {
 
 	// set page title
 	document.title = getPageTitle(to.meta.title)
-
-	//判断用户是否登录 & 判断用户信息是否丢失
-	const isLogin = checkSymbol() && JSON.stringify(store.state.user.userInfo) != '{}'
 	
-	if (isLogin) {
+	//判断是否登录前台
+	const isUser = checkSymbol('home') && JSON.stringify(store.state.user.userInfo) != '{}'
+
+	//判断是否登录后台
+	const isAdmin = checkSymbol('admin') && JSON.stringify(store.state.admin.userInfo) != '{}'
+
+	if ((to.path == '/' && isUser) || (to.path.startsWith('/admin') && isAdmin)) {
 		if (to.path === '/login') {
 			// if is logged in, redirect to the home page
 			next({ path: '/' })
@@ -28,7 +31,7 @@ router.beforeEach(async (to, from, next) => {
 		} else {
 			next()
 		}
-	} else {
+	} else{
 		/* has no token*/
 		if (whiteList.indexOf(to.path) !== -1) {
 			// in the free login whitelist, go directly
@@ -39,6 +42,7 @@ router.beforeEach(async (to, from, next) => {
 			NProgress.done()
 		}
 	}
+
 })
 
 router.afterEach(() => {

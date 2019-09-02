@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="head">
+        <div class="head-r">
             <el-button type="info" size="small" @click="() => { showDialog(1) }">添加用户</el-button>
             <el-select v-model="pageSize" placeholder="显示条数" size="small">
                 <el-option label="10条" :value="10"></el-option>
@@ -63,7 +63,7 @@
                     <el-button
                         type="success"
                         size="mini"
-                        @click="() => changePermission(scope.row.id)">
+                        @click="() => changePermission(scope.row)">
                         权限设置
                     </el-button>
                     <el-button
@@ -207,6 +207,15 @@ export default {
                 this.dialogFormVisible = true
             }   
         },
+        changePermission(userData){
+            this.$router.push({
+                path: '/admin/menu/permission/userAuth',
+                query: {
+                    name: userData.user_name,
+                    id: userData.id
+                }
+            })
+        },
         submitForm(formName) {
             this.loading = this.$loading({lock: true})
 			this.$refs[formName].validate((valid) => {
@@ -256,18 +265,11 @@ export default {
 					return false
 				}
 			})
-		},
+        }
     }
 }
 </script>
 <style lang="scss">
-.head{
-    padding: 15px 0;
-    text-align: right;
-    .el-select{
-        margin-left: 10px;
-    }
-}
 .cell{
     text-align: center;
 }

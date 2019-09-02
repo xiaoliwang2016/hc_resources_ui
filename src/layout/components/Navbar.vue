@@ -6,25 +6,16 @@
 
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
+		  
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+			<span style="position: relative;top: -12px;">{{$store.state.user.userInfo.user_name}}</span>
+          <img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566971093061&di=15ab06c14d562c1840c21f23d6b9a917&imgtype=0&src=http%3A%2F%2Fwww.icosky.com%2Ficon%2Fpng%2FSystem%2FScrap%2FClient%25202.png' class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <router-link to="/">
-            <el-dropdown-item>
-              Home
-            </el-dropdown-item>
-          </router-link>
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <el-dropdown-item>Docs</el-dropdown-item>
-          </a>
-          <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">Log Out</span>
-          </el-dropdown-item>
+			<el-dropdown-item divided>
+			<span style="display:block;" @click="logout">退出</span>
+			</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -35,27 +26,28 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import { login } from '@/api/admin'
 
 export default {
-  components: {
-    Breadcrumb,
-    Hamburger
-  },
-  computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar'
-    ])
-  },
-  methods: {
-    toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
-    },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-    }
-  }
+	components: {
+		Breadcrumb,
+		Hamburger
+	},
+	computed: {
+		...mapGetters([
+			'sidebar',
+			'avatar'
+		])
+	},
+	methods: {
+		toggleSideBar() {
+			this.$store.dispatch('app/toggleSideBar')
+		},
+		async logout() {
+			await this.$store.dispatch('user/logout')
+			this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+		}
+	}
 }
 </script>
 
@@ -130,7 +122,6 @@ export default {
           position: absolute;
           right: -20px;
           top: 25px;
-          font-size: 12px;
         }
       }
     }

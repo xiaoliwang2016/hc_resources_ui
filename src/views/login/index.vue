@@ -127,8 +127,7 @@ export default {
 					user_no: this.loginForm.username,
 					password: this.loginForm.password
 				}).then(() => {
-					this.$store.state.user.userInfo
-					this.$router.push({ path: this.redirect || "/" })
+					this.$router.push({ path: '/' })
 					this.loading = false
 				}).catch(() => {
 					this.loading = false;

@@ -45,21 +45,14 @@ export const constantRoutes = [
 
 	{
 		path: '/',
-		component: Layout,
-		redirect: '/dashboard',
-		children: [{
-			path: 'dashboard',
-			name: 'Dashboard',
-			component: () => import('@/views/dashboard/index'),
-			meta: { title: 'Dashboard', icon: 'dashboard' }
-		}]
+		component: () => import('@/views/home/index'),
+		hidden: true
 	},
 
 	{
-		path: '/menu',
+		path: '/admin/menu',
 		name: 'Menu',
 		component: Layout,
-		redirect: '/menu/resources',
 		meta: { title: '菜单', icon: 'form' },
 		children: [
 			{
@@ -97,13 +90,64 @@ export const constantRoutes = [
 					{
 						path: 'roleAuth',
 						component: () => import('@/views/resources/permission/roleAuth'),
-						name: 'RoleAuth'
+						name: 'RoleAuth',
+						hidden: true
+					},
+					{
+						path: 'userAuth',
+						component: () => import('@/views/resources/permission/userAuth'),
+						name: 'UserAuth',
+						hidden: true
 					}
 				],
 			}
 		]
 	},
-	
+
+	{
+		path: '/admin/setting',
+		name: 'Setting',
+		component: Layout,
+		meta: { title: '权限', icon: 'form' },
+		children: [
+			{
+				path: 'theme',
+				component: () => import('@/views/admin/theme'),
+				name: 'Theme',
+				meta: { title: '租户设置' }
+			},
+			{
+				path: 'admin',
+				component: () => import('@/views/admin/admin'),
+				name: 'Admin',
+				meta: { title: '管理员设置' }
+			},
+			{
+				path: 'adminAuth',
+				component: () => import('@/views/admin/adminAuth'),
+				name: 'AdminAuth',
+				hidden: true
+			},
+			{
+				path: 'role',
+				component: () => import('@/views/admin/role'),
+				name: 'AdminRole',
+				meta: { title: '角色管理' }
+			},
+			{
+				path: 'roleAuth',
+				component: () => import('@/views/admin/roleAuth'),
+				name: 'AdminRoleAuth',
+				hidden: true
+			},
+			{
+				path: 'access',
+				component: () => import('@/views/admin/access'),
+				name: 'Access',
+				meta: { title: '权限列表' }
+			}
+		]
+	},
 	
 	// 404 page must be placed at the end !!!
 	{ path: '*', redirect: '/404', hidden: true }

@@ -31,3 +31,19 @@ export function deleteResources(data){
         data
     }) 
 }
+
+export function assignToRole(data){
+    return request({
+        url: '/admin/resources/assignToRole',
+        method: 'post',
+        data
+    }) 
+}
+
+export function assignToUser(data){
+    return request({
+        url: '/admin/resources/assignToUser',
+        method: 'post',
+        data
+    }) 
+}

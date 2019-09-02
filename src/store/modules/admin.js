@@ -1,11 +1,10 @@
-import { login, logout } from '@/api/user'
+import { login } from '@/api/admin'
 import { checkSymbol, setSymbol, removeSymbol } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
 const state = {
-	//当前登录主题ID
-	themeInfo: {},
-	userInfo: {}
+	userInfo: {},
+	themeInfo: {}
 }
 
 const mutations = {
@@ -20,14 +19,14 @@ const mutations = {
 const actions = {
 	// user login
 	login({ commit }, userInfo) {
-		const { user_no, password } = userInfo
+		const { user_no, password, theme_id } = userInfo
 		return new Promise((resolve, reject) => {
-			login({ user_no: user_no.trim(), password: password }).then(response => {
+			login({ user_no: user_no.trim(), password, theme_id }).then(response => {
 				const { data } = response
 				commit('SET_USER_INFO', data)
 				commit('SET_THEME_INFO', data.themes[0])
 				//设置登录标识
-				setSymbol('home')
+				setSymbol('admin')
 				resolve()
 			}).catch(error => {
 				reject(error)
@@ -41,7 +40,7 @@ const actions = {
 			logout(state.token).then(() => {
 				commit('SET_USER_INFO', {})
 				commit('SET_THEME_INFO', {})
-				removeSymbol('home')
+				removeSymbol('admin')
 				resetRouter()
 				resolve()
 			}).catch(error => {
@@ -55,7 +54,7 @@ const actions = {
 		return new Promise(resolve => {
 			commit('SET_USER_INFO', {})
 			commit('SET_THEME_INFO', {})
-			removeSymbol('home')
+			removeSymbol('admin')
 			resolve()
 		})
 	}
