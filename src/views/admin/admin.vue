@@ -14,11 +14,11 @@
                 label="姓名">
             </el-table-column>
             <el-table-column
-                prop="email"
-                label="地址">
+                prop="company_desc"
+                label="公司">
             </el-table-column>
             <el-table-column
-                prop="department"
+                prop="department_desc"
                 label="部门">
             </el-table-column>
             <el-table-column
@@ -74,19 +74,20 @@
         </el-table>
 
         <el-dialog :title="formTitle" :visible.sync="dialogFormVisible" width="400px">
+            <div class="tips">提示: 管理员必须是当前租户下的用户。</div>
             <el-form label-width="80px" width="240px">
                 <el-form-item label="用户">
-                    <el-select :value="adminForm.user_name" @change="index => { adminForm = userList[index] }" placeholder="选择用户">
+                    <el-select :disabled="adminForm.id" :value="adminForm.user_name" @change="index => { adminForm = userList[index] }" placeholder="选择用户">
                         <el-option :label="item.user_name" :value="index" v-for="(item, index) in userList" :key="item.id"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="登录密码">
-                    <el-input v-model="password"></el-input>
+                    <el-input v-model="password" type="password"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="() => { submitForm() } ">保 存</el-button>
+                <el-button type="primary" @click="() => { submitForm() } " :disabled="!(adminForm.id && password)">保 存</el-button>
             </div>
         </el-dialog>
     </div>
@@ -146,9 +147,14 @@ export default {
 
         showDialog(type, adminInfo){
             if(type == 1){
+                this.formTitle = '新增管理员'
+                this.adminForm = {}
+                this.password = ''
                 this.dialogFormVisible = true
             }else if(type == 2){
+                this.formTitle = `编辑管理员: ${adminInfo.user_name}`
                 this.adminForm = adminInfo
+                this.password = ''
                 this.dialogFormVisible = true
             }
         },
@@ -160,7 +166,7 @@ export default {
                     type: 'warning'
                 })
             }
-            var { user_no, user_name, email, department} = this.adminForm
+            var { user_no, user_name, email, department, department_desc, company, 	company_desc, job, job_desc} = this.adminForm
             this.loading = this.$loading({ lock: true })
             adminApi.addAdmin({
                 theme_id: this.$store.state.admin.themeInfo.id,
@@ -168,6 +174,11 @@ export default {
                 user_name,
                 email,
                 department,
+                department_desc,
+                company,
+                company_desc,
+                job,
+                job_desc,
                 password: this.password
             }).then(() => {
                 this.init().then(_ => {
@@ -197,3 +208,11 @@ export default {
     }
 }
 </script>
+<style lang="scss" scoped>
+.tips{
+    background-color: #eee;
+    color: #999;
+    padding: 0 0 0 30px;
+    margin-bottom: 15px;
+}
+</style>

@@ -8,9 +8,9 @@ export function listTheme(params){
     })
 }
 
-export function addTheme(data){
+export function addOrUpdateTheme(data){
     return request({
-        url: '/admin/theme/add',
+        url: '/admin/theme/addOrUpdate',
         method: 'post',
         data
     })

@@ -33,18 +33,21 @@ import Layout from '@/layout'
 export const constantRoutes = [
 	{
 		path: '/login',
+		name: 'Login',
 		component: () => import('@/views/login/index'),
 		hidden: true
 	},
 
 	{
 		path: '/404',
+		name: '404',
 		component: () => import('@/views/404'),
 		hidden: true
 	},
 
 	{
 		path: '/',
+		name: 'Home',
 		component: () => import('@/views/home/index'),
 		hidden: true
 	},
@@ -103,7 +106,12 @@ export const constantRoutes = [
 			}
 		]
 	},
+	
+	// 404 page must be placed at the end !!!
+	{ path: '*', redirect: '/404', hidden: true }
+]
 
+export const asyncRoutes = [
 	{
 		path: '/admin/setting',
 		name: 'Setting',
@@ -114,13 +122,13 @@ export const constantRoutes = [
 				path: 'theme',
 				component: () => import('@/views/admin/theme'),
 				name: 'Theme',
-				meta: { title: '租户设置' }
+				meta: { title: '租户设置', roles: ['super'] }
 			},
 			{
 				path: 'admin',
 				component: () => import('@/views/admin/admin'),
 				name: 'Admin',
-				meta: { title: '管理员设置' }
+				meta: { title: '管理员设置', roles: ['owner', 'super'] }
 			},
 			{
 				path: 'adminAuth',
@@ -132,7 +140,7 @@ export const constantRoutes = [
 				path: 'role',
 				component: () => import('@/views/admin/role'),
 				name: 'AdminRole',
-				meta: { title: '角色管理' }
+				meta: { title: '角色管理', roles: ['owner', 'super'] }
 			},
 			{
 				path: 'roleAuth',
@@ -144,13 +152,10 @@ export const constantRoutes = [
 				path: 'access',
 				component: () => import('@/views/admin/access'),
 				name: 'Access',
-				meta: { title: '权限列表' }
+				meta: { title: '权限列表', roles: ['super'] }
 			}
 		]
-	},
-	
-	// 404 page must be placed at the end !!!
-	{ path: '*', redirect: '/404', hidden: true }
+	}
 ]
 
 const createRouter = () => new Router({

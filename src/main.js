@@ -25,7 +25,7 @@ import '@/permission' // permission control
  */
 import { mockXHR } from '../mock'
 if (process.env.NODE_ENV === 'production') {
-  mockXHR()
+	mockXHR()
 }
 
 // set ElementUI lang to EN
@@ -33,9 +33,25 @@ Vue.use(ElementUI, { locale })
 
 Vue.config.productionTip = false
 
+Vue.directive('identify', {
+	bind: function (el, binding) {
+		var name = binding.value.name
+		Vue.nextTick(function () {
+			if(store.state.admin.userInfo.super == 1 || store.state.admin.roles.indexOf('owner') != -1) return
+			var hasPermission = store.state.admin.access.reduce((accumulator, currentValue) => {
+				return (currentValue.name == name) || accumulator
+			}, false)
+			if(!hasPermission){
+				el.className += ' is-disabled' 
+				el.disabled = 'disabled'
+			}
+		})
+	}
+})
+
 new Vue({
-  el: '#app',
-  router,
-  store,
-  render: h => h(App)
+	el: '#app',
+	router,
+	store,
+	render: h => h(App)
 })

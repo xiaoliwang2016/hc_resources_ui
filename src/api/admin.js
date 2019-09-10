@@ -8,6 +8,13 @@ export function login(data){
 	})
 }
 
+export function logout(){
+	return request({
+		url: '/admin/admin/logout',
+		method: 'post'
+	})
+}
+
 export function getAdminList(params){
 	return request({
 		url: '/admin/admin/list',
@@ -61,5 +68,13 @@ export function assignAccessToAdmin(data){
 		url: '/admin/access/assignToAdmin',
 		method: 'post',
 		data
+	})
+}
+
+export function getThemeList(params){
+	return request({
+		url: '/admin/admin/getThemeList',
+		method: 'get',
+		params
 	})
 }

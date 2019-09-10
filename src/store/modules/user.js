@@ -1,12 +1,13 @@
-import { login, logout } from '@/api/user'
+import { login, logout } from '@/api/permission'
 import { checkSymbol, setSymbol, removeSymbol } from '@/utils/auth'
 import { resetRouter } from '@/router'
+import { storeMaker } from '@/utils/index'
 
-const state = {
+const state = storeMaker({
 	//当前登录主题ID
 	themeInfo: {},
 	userInfo: {}
-}
+})
 
 const mutations = {
 	SET_USER_INFO: (state, userInfo) => {
@@ -37,17 +38,15 @@ const actions = {
 
 	//退出登录，清空标识
 	logout({ commit, state }) {
-		return new Promise((resolve, reject) => {
-			logout(state.token).then(() => {
-				commit('SET_USER_INFO', {})
-				commit('SET_THEME_INFO', {})
-				removeSymbol('home')
-				resetRouter()
-				resolve()
-			}).catch(error => {
-				reject(error)
-			})
-		})
+		commit('SET_USER_INFO', {})
+		commit('SET_THEME_INFO', {})
+		removeSymbol('home')
+		resetRouter()
+	},
+
+	//切换主题
+	switchTheme({ commit }, themeInfo){
+		commit('SET_THEME_INFO', themeInfo)
 	},
 
 	// remove token

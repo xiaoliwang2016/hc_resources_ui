@@ -54,17 +54,28 @@
         </el-table>
 
         <el-dialog :title="formTitle" :visible.sync="dialogFormVisible" width="400px">
-            <el-form :model="themeForm" :rules="rules" ref="themeForm" label-width="80px" width="240px">
-                <el-form-item label="租户名称" prop="theme_name">
+            <el-form :model="themeForm" ref="themeForm" label-width="100px" width="240px">
+                <el-form-item label="员工工号">
+                    <el-row type="flex" justify="space-between">
+                        <el-col :span="14">
+                            <el-input v-model="themeForm.manager_id" :disabled="existed"></el-input>
+                        </el-col>
+                        <el-col :span="3">
+                            <el-button type="text" @click="search" :disabled="existed">搜索</el-button>
+                        </el-col>
+                        <el-col :span="3">
+                            <el-button type="text" @click="clear" :disabled="operation == 'edit'">清空</el-button>
+                        </el-col>
+                    </el-row>
+                </el-form-item>
+                <el-form-item label="租户名称">
                     <el-input v-model="themeForm.theme_name" width="120"></el-input>
                 </el-form-item>
-                <el-form-item label="所属部门" prop="department">
-                    <el-select v-model="themeForm.department" placeholder="租户所属部门">
-                        <el-option :label="item.title" :value="item.title" v-for="item in departmentArr" :key="item.id"></el-option>
-                    </el-select>
+                <el-form-item label="管理员名称">
+                    <el-input v-model="themeForm.manager" width="120" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="创建者" prop="manager">
-                    <el-input v-model="themeForm.manager"></el-input>
+                <el-form-item label="所属部门">
+                    <el-input v-model="themeForm.department" width="120" disabled></el-input>
                 </el-form-item>
                 <el-form-item label="租户描述">
                     <el-input v-model="themeForm.remark" resize="none"></el-input>
@@ -72,7 +83,7 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="() => { submitForm('themeForm') } ">保 存</el-button>
+                <el-button type="primary" @click="() => { submitForm('themeForm') } " :disabled="!(existed && themeForm.theme_name)">保 存</el-button>
             </div>
         </el-dialog>
     </div>
@@ -80,6 +91,7 @@
 
 <script>
 import * as api from '@/api/theme'
+import { searchUser } from '@/api/user'
 import { parseTime } from '@/utils/index'
 export default {
     data(){
@@ -87,35 +99,20 @@ export default {
             themeList: [],
             dialogFormVisible: false,
             themeForm: {},
-            rules: {
-                theme_name: [
-                    { required: true, message: '请输入员工姓名', trigger: 'blur' }
-                ],
-                manager: [
-                    { required: true, message: '请输入员工创建者', trigger: 'blur' }
-                ],
-                department: [
-                    { required: true, message: '请选择部门', trigger: 'blur' }
-                ]
-            },
-            departmentArr: [
-                {id: 1, title: '财务部'},
-                {id: 2, title: '采购部'},
-                {id: 3, title: '人事部'},
-                {id: 4, title: '开发部'}
-            ],
-            formTitle: ''
+            formTitle: '',
+            existed: false,
+            operation: ''
         }
     },
 
     mounted(){
-        this.init()
+        this.render()
     },
 
     methods: {
         parseTime,
 
-        init(){
+        render(){
             api.listTheme({
                 pageNo: 1,
                 pageSize: 10
@@ -129,16 +126,12 @@ export default {
                 this.dialogFormVisible = true
                 this.formTitle = '新增租户'
                 this.operation = 'create'
-                this.themeForm = {
-                    theme_name: '',
-                    department: '',
-                    manager: '',
-                    remark: ''
-                }
+                this.clear()
             }else if(opreate == 2){
                 this.formTitle = '编辑租户'
                 this.operation = 'edit'
-                this.userForm = {
+                this.existed = false
+                this.themeForm = {
                     ...themeData
                 }
                 this.dialogFormVisible = true
@@ -146,53 +139,68 @@ export default {
         },
 
         submitForm(formName) {
-            this.loading = this.$loading({lock: true})
-			this.$refs[formName].validate((valid) => {
-				if (valid) {
-					//创建
-					if(this.operation == 'create'){
-						var data = {
-                            ...this.themeForm,
-                            status: 1
-						}
-						api.addTheme(data).then(res => {
-							this.dialogFormVisible = false
-							//创建成功后刷新
-							this.render().then(() => {
-								this.$message({
-									message: '租户创建成功',
-									type: 'success'
-								})
-								this.loading.close()
-							})
-						}).catch(() => {
-                            this.loading.close()
-                        })
-					//更新
-					}else if(this.operation == 'edit'){
-						api.updateUser(this.themeForm).then(res => {
-							this.dialogFormVisible = false
-							this.render().then(() => {
-								this.$message({
-									message: '员工信息更新成功',
-									type: 'success'
-								})
-								this.loading.close()
-							})
-						}).catch(err => {
-							this.loading.close()
-						})
-					}
-
-				} else {
-					this.$message({
-						message: '表单提交失败',
-						type: 'warning'
+            this.loading = this.$loading()
+            //创建
+            if(this.operation == 'create'){
+                api.addOrUpdateTheme(this.themeForm).then(res => {
+                    this.dialogFormVisible = false
+                    //创建成功后刷新
+                    this.render()
+                    this.$message({
+                        message: '租户创建成功',
+                        type: 'success'
                     })
                     this.loading.close()
-					return false
-				}
-			})
+                }).catch(() => {
+                    this.loading.close()
+                })
+            //更新
+            }else if(this.operation == 'edit'){
+                api.addOrUpdateTheme(this.themeForm).then(res => {
+                    this.dialogFormVisible = false
+                    this.render()
+                    this.$message({
+                        message: '员工信息更新成功',
+                        type: 'success'
+                    })
+                    this.loading.close()
+                }).catch(err => {
+                    this.loading.close()
+                })
+            }
+        },
+
+        /**
+         * 通过工号去employee检索数据
+         */
+        search(){
+            searchUser({
+                user_no: this.themeForm.manager_id
+            }).then(res => {
+                var { data } = res
+                if(data){
+                    this.existed = true
+                    this.themeForm.manager = data.SNAME ? data.SNAME  : '佚名'
+                    this.themeForm.department = data.ZZ_SIJI_DESC ? data.ZZ_SIJI_DESC  : '未知'
+                }else{
+                    this.$message({
+                        message: '系统中找不到该用户',
+                        type: 'warning'
+                    })
+                }
+            })
+        },
+        /**
+         * 清空表单
+         */
+        clear(){
+            this.existed = false
+            this.themeForm = {
+                theme_name: '',
+                department: '',
+                manager_id: '',
+                manager: ''
+            }
         }
     }
 }

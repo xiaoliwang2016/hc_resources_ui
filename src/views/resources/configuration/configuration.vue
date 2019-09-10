@@ -2,17 +2,18 @@
 	<el-container>
 		<el-header height="50px" class="tips"><b>温馨提示!</b> 本模块功能配置主题门户首页和左侧菜单；菜单深度为3.</el-header>
 		<el-main>
-
 			  <div class="block">
 				<div class="row tree-head">
 					<span class="title title_0">菜单名称</span>
 					<span class="grid">菜单类型</span>
 					<span class="grid">启用</span>
 					<span class="grid">公开</span>
+					<span class="grid">系统来源</span>
 					<span class="btn-group">
 						<el-button
 							type="success"
 							size="mini"
+							v-identify="{name: 'add_resources_2'}"
 							@click="() => createResources({type: 0, id: 0})">
 							创建一级菜单
 						</el-button>
@@ -44,24 +45,35 @@
 								inactive-color="#ff4949">
 							</el-switch>
 						</span>
+						<span class="grid">{{data.origin}}</span>
 						<span class="btn-group">
 							<el-button
-								v-if="data.type != 3"
+								v-if="data.type == 1"
+								type="success"
+								size="mini" 
+								v-identify="{name: 'add_resources_2'}"
+								@click="() => createResources(data)">
+								创建二级菜单
+							</el-button>
+							<el-button
+								v-if="data.type == 2"
 								type="success"
 								size="mini"
+								v-identify="{name: 'add_resources_3'}"
 								@click="() => createResources(data)">
-								<template v-if="data.type == 1">创建二级菜单</template>
-								<template v-else-if="data.type == 2">创建三级菜单</template>
+								创建三级菜单
 							</el-button>
 							<el-button
 								type="primary"
 								size="mini"
+								v-identify="{name: 'edit_resources'}"
 								@click="() => editResources(data)">
 								编辑
 							</el-button>
 							<el-button
 								type="warning"
 								size="mini"
+								v-identify="{name: 'delete_resources'}"
 								@click="() => deleteResources(data.id)">
 								删除
 							</el-button>
@@ -81,21 +93,42 @@
 							<el-input type="text" v-model="resourcesForm.menu_title" placeholder="请输入菜单标题" maxlength="8" show-word-limit></el-input>
 						</el-col>
 					</el-form-item>
+
 					<el-form-item label="打开方式" prop="open_type">
 						<el-select v-model="resourcesForm.open_type" placeholder="请选择打开方式" :disabled="resourcesForm.type!=3">
 							<el-option label="当前窗口" :value="0"></el-option>
 							<el-option label="新窗口" :value="1"></el-option>
 						</el-select>
 					</el-form-item>
-					<el-form-item label="链接地址" prop="url">
-						<el-input placeholder="请输入地址" v-model="resourcesForm.url" :disabled="resourcesForm.type != 3">
-							<template slot="prepend">Http://</template>
-							<el-select v-model="resourcesForm.origin" slot="append" placeholder="请选择">
-								<el-option label="Tableau" value="Tableau"></el-option>
-								<el-option label="其他系统" value="其他系统"></el-option>
-							</el-select>
-						</el-input>
+
+					<el-form-item label="链接地址" prop="url" :inline="true">
+						<el-row type="flex" justify="space-between">
+							<el-col :span="11">
+								<el-input placeholder="请输入地址" v-model="resourcesForm.url" :disabled="resourcesForm.type != 3">
+									<template slot="prepend">Http://</template>
+								</el-input>
+							</el-col>
+							
+							<el-col :span="6">
+								<span>系统来源：</span>
+								<el-select v-model="resourcesForm.origin" placeholder="请选择" :disabled="resourcesForm.type!=3">
+									<el-option label="Tableau" value="Tableau"></el-option>
+								</el-select>
+							</el-col>
+
+							<el-col :span="6">
+								<el-switch
+									:disabled="resourcesForm.type!=3"
+									v-model="resourcesForm.verify"
+									active-color="#13ce66"
+									inactive-color="#ff4949">
+								</el-switch>
+								<span>用户名：</span>
+								<el-input v-model="resourcesForm.verify_id" :disabled="!resourcesForm.verify" style="width: 150px;"></el-input>
+							</el-col>
+						</el-row>
 					</el-form-item>
+
 					<el-form-item label="备用地址">
 						<el-input placeholder="请输入备用地址（选填）" v-model="resourcesForm.back_url" :disabled="resourcesForm.type!=3">
 							<template slot="prepend">Http://</template>
@@ -179,12 +212,7 @@ export default {
 		},
 
 		submitForm(formName) {
-			this.loading = this.$loading({
-				lock: true,
-				text: 'Loading',
-				spinner: 'el-icon-loading',
-				background: 'rgba(0, 0, 0, 0.7)'
-			})
+			this.loading = this.$loading()
 			this.$refs[formName].validate((valid) => {
 				if (valid) {
 					//创建
@@ -273,6 +301,8 @@ export default {
 		 * 编辑菜单
 		 */
 		editResources(data){
+			console.log(data);
+			
 			this.layerTitle = '编辑菜单：' + data.menu_title
 			this.resourcesForm = data
 			this.operation = 'edit'
@@ -345,7 +375,7 @@ export default {
 	.btn-group{
 		display: inline-block;
 		width: 250px;
-		text-align: center;
+		text-align: right;
 		margin-left: 20px;
 	}
 }

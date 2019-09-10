@@ -6,6 +6,20 @@ import 'nprogress/nprogress.css' // progress bar style
 import { checkSymbol } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 
+// function existRouter(target, sources){
+// 	var exists = false
+// 	sources.map(item => {
+// 		console.log(item.name);
+		
+// 		if(item.name == target.name){
+// 			exists = true
+// 		}else if(item.children){
+// 			exists = exists || existRouter(target, item.children)
+// 		}
+// 	})
+// 	return exists
+// }
+
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login'] // no redirect whitelist
@@ -19,9 +33,11 @@ router.beforeEach(async (to, from, next) => {
 	
 	//判断是否登录前台
 	const isUser = checkSymbol('home') && JSON.stringify(store.state.user.userInfo) != '{}'
+	// const isUser = true
 
 	//判断是否登录后台
 	const isAdmin = checkSymbol('admin') && JSON.stringify(store.state.admin.userInfo) != '{}'
+	// const isAdmin = true
 
 	if ((to.path == '/' && isUser) || (to.path.startsWith('/admin') && isAdmin)) {
 		if (to.path === '/login') {

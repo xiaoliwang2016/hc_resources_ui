@@ -43,9 +43,8 @@
                 label="操作"
                 width="180">
                 <template slot-scope="scope">
-                    <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                    <el-button @click="toAuthorize(scope.row)" type="text" size="small">权限设置</el-button>
-                    <el-button type="text" size="small">编辑</el-button>
+                    <el-button @click="toAuthorize(scope.row)" type="text" size="small" v-identify="{name: 'edit_role'}">权限设置</el-button>
+                    <el-button type="text" size="small" v-identify="{name: 'delete_role'}">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -134,7 +133,7 @@ export default {
                 status: 1
             }
             this.loading = this.$loading({ lock: true })
-            api.addRole(data).then(() => {
+            api.addOrUpdateRole(data).then(() => {
                 this.dialogFormVisible = false
                 this.render().then(() => {
                     this.loading.close()

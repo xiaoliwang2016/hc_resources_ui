@@ -1,19 +1,28 @@
 <template>
   <div class="navbar">
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-dropdown class="avatar-container" trigger="click">
-		  
+		<el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-			<span style="position: relative;top: -12px;">{{$store.state.user.userInfo.user_name}}</span>
-          <img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566971093061&di=15ab06c14d562c1840c21f23d6b9a917&imgtype=0&src=http%3A%2F%2Fwww.icosky.com%2Ficon%2Fpng%2FSystem%2FScrap%2FClient%25202.png' class="user-avatar">
-          <i class="el-icon-caret-bottom" />
+			<span style="position: relative;top: -12px;">当前租户：{{$store.state.admin.themeInfo.theme_name}}</span>
+           <i class="el-icon-caret-bottom" style="top: 5px;"/>
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-			<el-dropdown-item divided>
+			<el-dropdown-item v-for="item in themeList" :key="item.id">
+				<span style="display:block;" @click="() => { switchTheme(item) }">{{item.theme_name}}</span>
+			</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <el-dropdown class="avatar-container" trigger="click">
+        <div class="avatar-wrapper">
+          	<img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566971093061&di=15ab06c14d562c1840c21f23d6b9a917&imgtype=0&src=http%3A%2F%2Fwww.icosky.com%2Ficon%2Fpng%2FSystem%2FScrap%2FClient%25202.png' class="user-avatar">
+			<span style="position: relative;top: -12px;">{{$store.state.user.userInfo.user_name}}</span>
+		  	<i class="el-icon-caret-bottom" style="top: 15px;"/>
+        </div>
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+			<el-dropdown-item>
 			<span style="display:block;" @click="logout">退出</span>
 			</el-dropdown-item>
         </el-dropdown-menu>
@@ -27,11 +36,17 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import { login } from '@/api/admin'
+import { getThemeList } from '@/api/admin'
 
 export default {
 	components: {
 		Breadcrumb,
 		Hamburger
+	},
+	data(){
+		return {
+			themeList: []
+		}
 	},
 	computed: {
 		...mapGetters([
@@ -44,9 +59,35 @@ export default {
 			this.$store.dispatch('app/toggleSideBar')
 		},
 		async logout() {
-			await this.$store.dispatch('user/logout')
-			this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+			await this.$store.dispatch('admin/logout')
+			this.$router.push('/login')
+		},
+		switchTheme(themeInfo){
+			this.$store.dispatch('user/switchTheme', themeInfo)
+			this.$store.dispatch('admin/login', {
+                user_no: this.$store.state.admin.userInfo.user_no.toString(),
+                password: this.$store.state.admin.password,
+                theme_id: themeInfo.id
+			}).then(() => {
+				// location.reload()
+                this.$store.dispatch("permission/generateRoutes", this.$store.state.admin.roles).then(accessedRoutes => {
+					
+                    //动态挂载路由
+					this.$router.addRoutes(accessedRoutes)
+                    this.password = ''
+                    this.$router.push({
+                        path: '/admin/menu/resources/configuration'
+                    })
+                })
+			})
 		}
+	},
+	mounted(){
+		getThemeList({
+			id: this.$store.state.admin.userInfo.id
+		}).then(res => {
+			this.themeList = res.data
+		})
 	}
 }
 </script>

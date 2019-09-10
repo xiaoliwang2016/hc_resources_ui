@@ -16,5 +16,5 @@ export function isExternal(path) {
  */
 export function validUsername(str) {
   var reg = new RegExp("^[0-9]*$")
-  return reg.test(str)
+  return reg.test(str) || str == 'admin'
 }

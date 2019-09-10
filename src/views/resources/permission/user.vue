@@ -23,11 +23,11 @@
                 label="姓名">
             </el-table-column>
             <el-table-column
-                prop="email"
-                label="地址">
+                prop="company_desc"
+                label="公司">
             </el-table-column>
             <el-table-column
-                prop="department"
+                prop="department_desc"
                 label="部门">
             </el-table-column>
             <el-table-column
@@ -63,18 +63,21 @@
                     <el-button
                         type="success"
                         size="mini"
+                        v-identify="{name: 'assign_resources_user'}"
                         @click="() => changePermission(scope.row)">
                         权限设置
                     </el-button>
                     <el-button
                         type="primary"
-                        size="mini"
+                        size="mini" 
+                        v-identify="{name: 'edit_user'}"
                         @click="() => showDialog(2, scope.row)">
                         编辑
                     </el-button>
                     <el-button
                         type="warning"
-                        size="mini"
+                        size="mini" 
+                         v-identify="{name: 'delete_user'}"
                         @click="() => remove(scope.row.id)">
                         删除
                     </el-button>
@@ -83,31 +86,45 @@
         </el-table>
 
         <el-dialog :title="formTitle" :visible.sync="dialogFormVisible" width="400px">
-            <el-form :model="userForm" :rules="rules" ref="userForm" label-width="80px" width="240px">
-                <el-form-item label="员工工号" prop="user_no">
-                    <el-input v-model="userForm.user_no" width="120"></el-input>
+            <el-form :model="userForm" ref="userForm" label-width="80px" width="240px">
+                <el-form-item label="员工工号">
+                    <el-row type="flex" justify="space-between">
+                        <el-col :span="14">
+                            <el-input v-model="userForm.user_no" :disabled="existed"></el-input>
+                        </el-col>
+                        <el-col :span="3">
+                            <el-button type="text" @click="search" :disabled="existed">搜索</el-button>
+                        </el-col>
+                        <el-col :span="3">
+                            <el-button type="text" @click="clear" :disabled="operation == 'edit'">清空</el-button>
+                        </el-col>
+                    </el-row>
                 </el-form-item>
-                <el-form-item label="员工姓名" prop="user_name">
-                    <el-input v-model="userForm.user_name"></el-input>
+                <el-form-item label="员工姓名">
+                    <el-input v-model="userForm.user_name" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="所属公司">
+                    <el-input v-model="userForm.company_desc" disabled></el-input>
                 </el-form-item>
                 <el-form-item label="邮箱地址">
                     <el-input v-model="userForm.email"></el-input>
                 </el-form-item>
-                <el-form-item label="所属部门" prop="department">
-                    <el-select v-model="userForm.department" placeholder="员工所属部门">
-                        <el-option :label="item.title" :value="item.title" v-for="item in departmentArr" :key="item.id"></el-option>
-                    </el-select>
+                <el-form-item label="所属部门" >
+                    <el-input v-model="userForm.department_desc" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="登录密码" prop="password">
+                <el-form-item label="岗位">
+                    <el-input v-model="userForm.job_desc" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="登录密码">
                     <el-input v-model="userForm.password"></el-input>
                 </el-form-item>
-                <el-form-item label="确认密码" prop="passwordRepeat">
+                <el-form-item label="确认密码">
                     <el-input v-model="userForm.passwordRepeat"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="() => { submitForm('userForm') } ">保 存</el-button>
+                <el-button type="primary" @click="() => { submitForm('userForm') }" :disabled="!existed">保 存</el-button>
             </div>
         </el-dialog>
     </div>
@@ -139,33 +156,9 @@ export default {
             orderBy: 1,
             formTitle: '',
             dialogFormVisible: false,
-            departmentArr: [
-                {id: 1, title: '财务部'},
-                {id: 2, title: '采购部'},
-                {id: 3, title: '人事部'},
-                {id: 4, title: '开发部'}
-            ],
             userForm: {},
-            formTitle: '',
-            rules: {
-                user_no: [
-                    { required: true, message: '请输入员工工号', trigger: 'blur' },
-                    { validator: validateNo, trigger: 'blur' }
-                ],
-                user_name: [
-                    { required: true, message: '请输入员工姓名', trigger: 'blur' }
-                ],
-                password: [
-                    { required: true, message: '请输入密码', trigger: 'blur' }
-                ],
-                passwordRepeat: [
-                    { required: true, message: '请再次输入密码', trigger: 'blur' },
-                    { validator: validatePass2, trigger: 'blur' }
-                ],
-                department: [
-                    { required: true, message: '请选择部门', trigger: 'blur' }
-                ]
-            }
+            existed: false,
+            operation: ''
         }
     },
 
@@ -187,15 +180,7 @@ export default {
                 this.dialogFormVisible = true
                 this.formTitle = '新增员工'
                 this.operation = 'create'
-                this.userForm = {
-                    user_no: '',
-                    user_name: '',
-                    email: '',
-                    department: '',
-                    password: '',
-                    passwordRepeat: '',
-                    remark: ''
-                }
+                this.clear()
             }else if(opreate == 2){
                 this.formTitle = '编辑员工信息'
                 this.operation = 'edit'
@@ -204,6 +189,7 @@ export default {
                 this.userForm = {
                     ...userData
                 }
+                this.existed = true
                 this.dialogFormVisible = true
             }   
         },
@@ -217,54 +203,86 @@ export default {
             })
         },
         submitForm(formName) {
+            if(!(this.userForm.password == this.userForm.passwordRepeat && this.userForm.password != '')){
+                return this.$message({
+                    message: '密码不能为空，切两次输入密码必须一致',
+                    type: 'warning'
+                })
+            }
             this.loading = this.$loading({lock: true})
-			this.$refs[formName].validate((valid) => {
-				if (valid) {
-					//创建
-					if(this.operation == 'create'){
-						var data = {
-                            ...this.userForm,
-                            status: 1,
-                            theme_id: this.$store.state.user.themeInfo.id
-						}
-						api.addUser(data).then(res => {
-							this.dialogFormVisible = false
-							//创建成功后刷新
-							this.render().then(() => {
-								this.$message({
-									message: '用户创建成功',
-									type: 'success'
-								})
-								this.loading.close()
-							})
-						}).catch(() => {
-                            this.loading.close()
+            //创建
+            if(this.operation == 'create'){
+                var data = {
+                    ...this.userForm,
+                    status: 1,
+                    theme_id: this.$store.state.user.themeInfo.id
+                }
+                api.addUser(data).then(res => {
+                    this.dialogFormVisible = false
+                    //创建成功后刷新
+                    this.render().then(() => {
+                        this.$message({
+                            message: '用户创建成功',
+                            type: 'success'
                         })
-					//更新
-					}else if(this.operation == 'edit'){
-						api.updateUser(this.userForm).then(res => {
-							this.dialogFormVisible = false
-							this.render().then(() => {
-								this.$message({
-									message: '员工信息更新成功',
-									type: 'success'
-								})
-								this.loading.close()
-							})
-						}).catch(err => {
-							this.loading.close()
-						})
-					}
-
-				} else {
-					this.$message({
-						message: '表单提交失败',
-						type: 'warning'
+                        this.loading.close()
                     })
+                }).catch(() => {
                     this.loading.close()
-					return false
-				}
-			})
+                })
+            //更新
+            }else if(this.operation == 'edit'){
+                api.updateUser(this.userForm).then(res => {
+                    this.dialogFormVisible = false
+                    this.render().then(() => {
+                        this.$message({
+                            message: '员工信息更新成功',
+                            type: 'success'
+                        })
+                        this.loading.close()
+                    })
+                }).catch(err => {
+                    this.loading.close()
+                })
+            }
+        },
+        /**
+         * 通过工号去employee检索数据
+         */
+        search(){
+            api.searchUser({
+                user_no: this.userForm.user_no
+            }).then(res => {
+                var { data } = res
+                if(data){
+                    this.existed = true
+                    this.userForm.user_name = data.SNAME
+                    this.userForm.department = data.ZZ_SIJI
+                    this.userForm.department_desc = data.ZZ_SIJI_DESC
+                    this.userForm.company = data.BUKRS
+                    this.userForm.company_desc = data.BUKRS_DESC
+                    this.userForm.job = data.PLANS
+                    this.userForm.job_desc = data.PLANS_DESC
+                }else{
+                    this.$message({
+                        message: '系统中找不到该用户',
+                        type: 'warning'
+                    })
+                }
+            })
+        },
+        clear(){
+            this.existed = false
+            this.userForm = {
+                user_no: '',
+                user_name: '',
+                email: null,
+                department: '',
+                password: '',
+                passwordRepeat: '',
+                remark: '',
+                employee_id: ''
+            }
         }
     }
 }
