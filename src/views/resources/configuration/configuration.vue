@@ -170,7 +170,7 @@
 								</el-switch>
 								<el-select style="width: 180px;" v-model="link.verify_account" :disabled="!link.verify" placeholder="登录账号" @change="value => { changeVerifyStatus(value, index) }">
 									<el-option :label="item.account" :value="item.account" v-for="item in accountList" :key="item.account"></el-option>
-									<el-option label="create one" :value="0"></el-option>
+									<el-option label="新建账号" :value="0"></el-option>
 								</el-select>
 							</el-col>
 
