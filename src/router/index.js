@@ -56,7 +56,7 @@ export const constantRoutes = [
 		path: '/admin/menu',
 		name: 'Menu',
 		component: Layout,
-		meta: { title: '菜单', icon: 'form' },
+		meta: { title: '菜单', icon: 'menu' },
 		children: [
 			{
 				path: 'resources',
@@ -116,7 +116,7 @@ export const asyncRoutes = [
 		path: '/admin/setting',
 		name: 'Setting',
 		component: Layout,
-		meta: { title: '权限', icon: 'form' },
+		meta: { title: '权限', icon: 'setting' },
 		children: [
 			{
 				path: 'theme',

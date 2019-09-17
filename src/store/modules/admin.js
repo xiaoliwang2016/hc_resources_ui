@@ -7,8 +7,7 @@ const state = storeMaker({
 	userInfo: {},
 	themeInfo: {},
 	roles: [],
-	access: [],
-	password: ''
+	access: []
 })
 
 const mutations = {
@@ -23,9 +22,6 @@ const mutations = {
 	},
 	SET_USER_ACCESS: (state, accessInfo) => {
 		state.access = accessInfo
-	},
-	SET_PASSWORD: (state, password) => {
-		state.password = password
 	}
 }
 
@@ -45,8 +41,7 @@ const actions = {
 				//判断是否为租户管理员
 				if(theme.manager_id == data.user_no){
 					roles.push('owner')
-				}
-				commit('SET_PASSWORD', password)				
+				}	
 				commit('SET_USER_INFO', data)
 				commit('SET_THEME_INFO', theme)
 				commit('SET_USER_ROLE', roles)
@@ -83,6 +78,10 @@ const actions = {
 			removeSymbol('admin')
 			resolve()
 		})
+	},
+
+	updateThemeInfo({ commit }, data) {
+		commit('SET_THEME_INFO', data)
 	}
 }
 

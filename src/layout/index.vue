@@ -53,6 +53,10 @@ export default {
 <style lang="scss" scoped>
 @import "~@/styles/mixin.scss";
 @import "~@/styles/variables.scss";
+.sidebar-container{
+  // top: 50px !important;
+  // height: calc(100% - 50px) !important;
+}
 
 .app-wrapper {
   @include clearfix;

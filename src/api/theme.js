@@ -15,3 +15,11 @@ export function addOrUpdateTheme(data){
         data
     })
 }
+
+export function getHomeInfo(params){
+    return request({
+        url: '/admin/theme/homeInfo',
+        method: 'get',
+        params
+    })
+}

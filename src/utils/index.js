@@ -228,3 +228,19 @@ export const storeMaker = (state) => {
         }
     })
 }
+
+//根据ID递归查找
+export const RecursiveSearch = function(arr, key, value){	
+	var dest = false
+	arr.map(item => {
+		if(item[key] == value){
+			dest = item
+		}else if(item.children && item.children.length > 0){
+			var res = RecursiveSearch(item.children, key, value)
+			if(res){
+				dest = res
+			}
+		}
+	})
+	return dest
+}

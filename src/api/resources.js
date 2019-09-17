@@ -8,20 +8,12 @@ export function getResourcesTree(params){
     })
 }
 
-export function addResources(data){
+export function addOrUpResources(data){
     return request({
-        url: '/admin/resources/add',
+        url: '/admin/resources/addOrUpdate',
         method: 'post',
         data
     })
-}
-
-export function editResources(data){
-    return request({
-        url: '/admin/resources/edit',
-        method: 'post',
-        data
-    }) 
 }
 
 export function deleteResources(data){

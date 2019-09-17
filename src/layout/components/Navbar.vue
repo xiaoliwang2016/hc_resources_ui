@@ -1,30 +1,48 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <hamburger
+      :is-active="sidebar.opened"
+      class="hamburger-container"
+      @toggleClick="toggleSideBar"
+    />
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-		<el-dropdown class="avatar-container" trigger="click">
-        <div class="avatar-wrapper">
-			<span style="position: relative;top: -12px;">当前租户：{{$store.state.admin.themeInfo.theme_name}}</span>
-           <i class="el-icon-caret-bottom" style="top: 5px;"/>
-        </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-			<el-dropdown-item v-for="item in themeList" :key="item.id">
-				<span style="display:block;" @click="() => { switchTheme(item) }">{{item.theme_name}}</span>
-			</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <div class="avatar-wrapper" style="margin-right: 10px;" @click="backHome">
+        <span style="font-size: 24px; color:#606266;">
+          <svg-icon icon-class="back" />
+        </span>
+        <span style="font-size: 14px; position: relative; top: -2px; color:#606266;"><b>返回前台</b></span>
+      </div>
+
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          	<img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566971093061&di=15ab06c14d562c1840c21f23d6b9a917&imgtype=0&src=http%3A%2F%2Fwww.icosky.com%2Ficon%2Fpng%2FSystem%2FScrap%2FClient%25202.png' class="user-avatar">
-			<span style="position: relative;top: -12px;">{{$store.state.user.userInfo.user_name}}</span>
-		  	<i class="el-icon-caret-bottom" style="top: 15px;"/>
+          <span style="font-size: 16px;margin-right: 5px;">
+            <svg-icon icon-class="switch" />
+          </span>
+          <b>{{$store.state.admin.themeInfo.theme_name}}</b>
+        </div>
+
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+          <el-dropdown-item v-for="item in themeList" :key="item.id">
+            <span style="display:block;" @click="() => { switchTheme(item) }">{{item.theme_name}}</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+
+      <el-dropdown class="avatar-container" trigger="click">
+        <div class="avatar-wrapper">
+          <span style="font-size: 16px; ">
+            <svg-icon icon-class="user" />
+          </span>
+          <span>
+            <b>{{$store.state.user.userInfo.user_name}}</b>
+          </span>
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-			<el-dropdown-item>
-			<span style="display:block;" @click="logout">退出</span>
-			</el-dropdown-item>
+          <el-dropdown-item>
+            <span style="display:block;" @click="logout">退出</span>
+          </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -32,64 +50,76 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
-import { login } from '@/api/admin'
-import { getThemeList } from '@/api/admin'
+import { mapGetters } from "vuex";
+import Breadcrumb from "@/components/Breadcrumb";
+import Hamburger from "@/components/Hamburger";
+import { login } from "@/api/admin";
+import { getThemeList } from "@/api/admin";
+import { resetRouter } from "@/router/index";
+import eventBus from "@/utils/eventBus";
 
 export default {
-	components: {
-		Breadcrumb,
-		Hamburger
-	},
-	data(){
-		return {
-			themeList: []
-		}
-	},
-	computed: {
-		...mapGetters([
-			'sidebar',
-			'avatar'
-		])
-	},
-	methods: {
-		toggleSideBar() {
-			this.$store.dispatch('app/toggleSideBar')
-		},
-		async logout() {
-			await this.$store.dispatch('admin/logout')
-			this.$router.push('/login')
-		},
-		switchTheme(themeInfo){
-			this.$store.dispatch('user/switchTheme', themeInfo)
-			this.$store.dispatch('admin/login', {
-                user_no: this.$store.state.admin.userInfo.user_no.toString(),
-                password: this.$store.state.admin.password,
-                theme_id: themeInfo.id
-			}).then(() => {
-				// location.reload()
-                this.$store.dispatch("permission/generateRoutes", this.$store.state.admin.roles).then(accessedRoutes => {
-					
-                    //动态挂载路由
-					this.$router.addRoutes(accessedRoutes)
-                    this.password = ''
-                    this.$router.push({
-                        path: '/admin/menu/resources/configuration'
-                    })
-                })
-			})
-		}
-	},
-	mounted(){
-		getThemeList({
-			id: this.$store.state.admin.userInfo.id
-		}).then(res => {
-			this.themeList = res.data
-		})
-	}
-}
+  components: {
+    Breadcrumb,
+    Hamburger
+  },
+  data() {
+    return {
+      	themeList: []
+    };
+  },
+  computed: {
+		...mapGetters(["sidebar", "avatar"])
+  },
+  methods: {
+    toggleSideBar() {
+      	this.$store.dispatch("app/toggleSideBar");
+    },
+    async logout() {
+		await this.$store.dispatch("admin/logout");
+		this.$router.push("/login");
+    },
+    /**
+     * 删除主题
+     */
+    switchTheme(themeInfo) {
+      this.$store.dispatch("user/switchTheme", themeInfo);
+      this.$store
+        .dispatch("admin/login", {
+			user_no: this.$store.state.admin.userInfo.user_no.toString(),
+			theme_id: themeInfo.id
+        })
+        .then(() => {
+          this.$store
+            .dispatch(
+				"permission/generateRoutes",
+				this.$store.state.admin.roles
+            )
+            .then(accessedRoutes => {
+				resetRouter();
+				//动态挂载路由
+				this.$router.addRoutes(accessedRoutes);
+				eventBus.$emit("change-theme");
+				this.$router.replace({
+					path: `/admin/menu/resources/configuration`
+				})
+            })
+        })
+    },
+    backHome() {
+      this.$router.replace({
+        path: '/'
+      })
+    }
+  },
+  mounted() {
+    getThemeList({
+      id: this.$store.state.admin.userInfo.id
+    }).then(res => {
+      this.themeList = res.data;
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -98,18 +128,18 @@ export default {
   overflow: hidden;
   position: relative;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .hamburger-container {
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
+    transition: background 0.3s;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, .025)
+      background: rgba(0, 0, 0, 0.025);
     }
   }
 
@@ -121,7 +151,7 @@ export default {
     float: right;
     height: 100%;
     line-height: 50px;
-
+    display: flex;
     &:focus {
       outline: none;
     }
@@ -136,36 +166,29 @@ export default {
 
       &.hover-effect {
         cursor: pointer;
-        transition: background .3s;
+        transition: background 0.3s;
 
         &:hover {
-          background: rgba(0, 0, 0, .025)
+          background: rgba(0, 0, 0, 0.025);
         }
       }
     }
 
     .avatar-container {
-      margin-right: 30px;
-
+      margin: 0 10px;
+      display: flex;
+      align-items: center;
       .avatar-wrapper {
-        margin-top: 5px;
         position: relative;
-
-        .user-avatar {
-          cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-        }
-
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-        }
+        cursor: pointer;
       }
     }
   }
+}
+</style>
+<style lang="scss">
+.el-popper {
+  margin-top: 5px !important;
+  padding: 5px 0;
 }
 </style>

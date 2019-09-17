@@ -7,11 +7,13 @@
             text-color="#F2F6FC" 
             active-text-color="#FFFFFF" 
             :style="{top: showTopBar ? 0 : '-50px'}">
-            <div class="avatar fl">欢迎回来，<b>{{$store.state.user.userInfo.user_name}}</b></div>
-            <div class="avatar">当前IP：<b>{{ip_address}}</b></div>
-            <div class="avatar" @click="showDialog">后台<i class="el-icon-setting"></i></div>
+            <div class="avatar fl">
+                <img src="@/assets/img/logo.png"/>
+                <b>数据管理系统</b>
+            </div>
+            <div class="avatar" @click="fullscreen"><svg-icon icon-class="screen" style="font-size: 20px;"/> &nbsp 全屏</div>
             <el-submenu index="2">
-                <template slot="title"> 租户</template>
+                <template slot="title">{{$store.state.user.themeInfo.theme_name}}</template>
                 <el-menu-item 
                     v-for="(item, index) in themeList"
                     :key="item.id"
@@ -20,8 +22,21 @@
                     >{{item.theme_name}}
                 </el-menu-item>
             </el-submenu>
-            <div class="avatar" @click="logout">退出</div>
-            <div class="avatar" @click="fullscreen">全屏</div>
+            <div class="avatar" @click="() => { changeMenu(homeResources) }" ><svg-icon icon-class="home" style="font-size: 20px;"/> &nbsp 首页</div>
+            <div class="avatar user-info" ref="dashboard">
+                <svg-icon icon-class="user" />  &nbsp 
+                <b>{{$store.state.user.userInfo.user_name}}</b> 
+                <div class="dashboard" v-show="dashboard_visiable">
+                    <div>工号：<b>{{$store.state.user.userInfo.user_no}}</b></div>
+                    <div>公司：<b>{{$store.state.user.userInfo.company_desc ? $store.state.user.userInfo.company_desc : '未知'}}</b></div>
+                    <div>部门：<b>{{$store.state.user.userInfo.department_desc ? $store.state.user.userInfo.department_desc : '未知'}}</b></div>
+                    <div>当前IP：<b>{{ip_address}}</b></div>
+                    <div>上次登录时间：<b>{{$store.state.user.userInfo.last_login}}</b></div>
+                    <div> <el-button type="text" @click="login"><svg-icon icon-class="admin" style="font-size: 20px;"/> &nbsp 登录后台</el-button> </div>
+                </div>
+            </div>
+            <div class="avatar" @click="logout"><svg-icon icon-class="logout" style="font-size: 20px;"/> &nbsp 退出</div>
+
         </el-menu>
 
         <el-menu
@@ -41,7 +56,7 @@
                         <template slot="title">{{subItem.menu_title}}</template>
                         <el-menu-item 
                             v-for="(cellItem, cellIndex) in subItem.children" 
-                            @click="() => changeUrl(cellItem)" 
+                            @click="() => changeMenu(cellItem)" 
                             :index="index + '-' + subIndex + '-' + cellIndex" 
                             :key="cellItem.id">
                         {{cellItem.menu_title}}</el-menu-item>
@@ -55,35 +70,25 @@
             </div>
 
         </el-menu>
-
-        <!-- <iframe :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}" :src="iframeUrl" frameborder="0"></iframe> -->
-
-        <div ref="vizContainer" :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}"></div>
-
-        <el-dialog title="登录到后台" :visible.sync="dialogFormVisible" width="25%">
-            <el-form>
-                <el-form-item label="工号" label-width="60px">
-                    <el-input v-model="user_no" autocomplete="off" type="text" disabled></el-input>
-                </el-form-item>
-                <el-form-item label="密码" label-width="60px">
-                    <el-input v-model="password" autocomplete="off" type="password"></el-input>
-                </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="() => { login() }">登 录</el-button>
+        <!-- 无需登录地址 通过ifrmae直接展示 -->
+        <template v-if="isFree">
+            <iframe v-if="iframeUrl" :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}" :src="iframeUrl" frameborder="0"></iframe>
+            <div v-else class="empty">
+                <svg-icon icon-class="empty" style="font-size: 80px;"/>
+                <p>当前页面为空，请联系管理员重新设置</p>
             </div>
-        </el-dialog>
+        </template>
+        <div v-else ref="vizContainer" :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}"></div>
     </div>
 </template>
 <script>
 import { getResourcesTree } from '@/api/resources'
 import { getThemeByUserId, getResourcesByUserId } from '@/api/user'
+import { getHomeInfo } from '@/api/theme'
 import { getToken } from '@/api/permission'
 import { login } from '@/api/admin'
 import { debounce } from "debounce"
 import { getYourIP, foowwLocalStorage } from '@/utils/index'
-import { Promise } from 'q';
 
 export default {
     data(){
@@ -93,36 +98,68 @@ export default {
             showMenu: true,
             showTopBar: true,
             themeList: [],
-            value: this.$store.state.user.themeInfo.id,
-            dialogFormVisible: false,
-            user_no: '',
-            password: '',
-            ip_address: ''
+            ip_address: '',
+            homeResources: null,
+            isFree: false,
+            dashboard_visiable: false
         }
     },
 
     mounted(){
+        this.render()
         this.init()
-        //监听全屏切换
-        document.onfullscreenchange = () => { 
-            if(!this.showTopBar){
-                this.showTopBar = true
-            }
-        }
-        //获取该用户的所有主题
-        getThemeByUserId({
-            id: this.$store.state.user.userInfo.id
-        }).then(res => {
-            this.themeList = res.data
+        this.$refs.dashboard.addEventListener('mouseenter', () => {
+            this.dashboard_visiable = true
         })
-        //获取当前内网IP地址
-        getYourIP().then(ip_address => {
-            this.ip_address = ip_address
+        this.$refs.dashboard.addEventListener('mouseover', () => {
+            this.dashboard_visiable = true
+        })
+        this.$refs.dashboard.addEventListener('mouseout', () => {
+            this.dashboard_visiable = false
         })
     },
 
+    beforeDestroy(){
+        document.onfullscreenchange = null
+    },
+
     methods: {
+        /**
+         * 初始化
+         */
         init(){
+            //监听全屏切换
+            document.onfullscreenchange = () => { 
+                if(!this.showTopBar){
+                    this.showTopBar = true
+                }
+            }
+            //获取该用户的所有主题
+            getThemeByUserId({
+                id: this.$store.state.user.userInfo.id
+            }).then(res => {
+                this.themeList = res.data
+            })
+            //获取当前内网IP地址
+            getYourIP().then(ip_address => {
+                this.ip_address = ip_address
+            })
+        },
+
+        render(){
+            //获取首页信息
+            getHomeInfo({
+                theme_id: this.$store.state.user.themeInfo.id
+            }).then(res => {
+                if(!res.data){
+                    this.isFree = true
+                    this.iframeUrl = ''
+                    return
+                }
+                this.homeResources = res.data
+                this.changeMenu(res.data)
+            })
+            //查询用户可以查看的资源
             getResourcesByUserId({
                 id: this.$store.state.user.userInfo.id,
                 theme_id: this.$store.state.user.themeInfo.id,
@@ -132,22 +169,17 @@ export default {
             })
         },
 
-        showDialog(){
-            this.user_no = this.$store.state.user.userInfo.user_no
-            this.dialogFormVisible = true
-        },
-
         /**
          * 登录后台
          */
         login(){
+            this.loading = this.$loading()
             this.$store.dispatch("admin/login", {
                 user_no: this.$store.state.user.userInfo.user_no.toString(),
-                password: this.password,
                 theme_id: this.$store.state.user.themeInfo.id
             }).then(() => {
                 var roles = []
-                this.dialogFormVisible = false
+                this.loading.close()
                 this.$store.dispatch("permission/generateRoutes", this.$store.state.admin.roles).then(accessedRoutes => {
                     //动态挂载路由
                     this.$router.addRoutes(accessedRoutes)
@@ -157,8 +189,7 @@ export default {
                     })
                 })
             }).catch(_ => {
-                this.password = ''
-                this.dialogFormVisible = false
+                this.loading.close()
             })
         },
 
@@ -166,34 +197,77 @@ export default {
          * 退出登录
          */
         logout(){
+            clearInterval(this.timer)
             this.$store.dispatch('user/logout')
             this.$router.push({
                 path: '/login'
             })
         },
 
-        changeUrl(resources){
-            this.$refs.vizContainer.innerHTML = ''
-            var subContainer = window.document.createElement('div')
-            this.$refs.vizContainer.appendChild(subContainer)
-            var options = {
-                width: document.documentElement.clientWidth || document.body.clientWidth,
-                height:document.documentElement.clientHeight|| document.body.clientHeight,
-                hideTabs: true,
-                onFirstInteractive: function () {
-                    yearFilter();
-                    setInterval(refreshReport, 60*1000*30);
-                }
-            };
+        /**
+         * 切换菜单
+         */
+        changeMenu(resources){
+            //当前选线为空
+            if(!resources){
+                this.isFree = true
+                this.iframeUrl = ''
+                return
+            }
+            document.title = resources.menu_title
+            clearInterval(this.timer)
+            var links = resources.links, counter = 0
+            if(!links || links.length == 0) return
+            if(links.length == 1){
+                this.changeLink(links[0])
+            }
+            if(links.length > 1){
+                this.changeLink(links[counter++])
+                this.timer = setInterval(() => {
+                    if(counter >= links.length){
+                        counter = 0
+                    }
+                    this.changeLink(links[counter])
+                    counter ++
+                }, 20000)
+            }
+        },
 
-            var { url } = resources
-            var subUrl = url.slice(url.indexOf('views/') + 6)
-            this.getToken(resources.verify_id).then(token => {
-                var url = `http://192.172.1.240/trusted/${token}/t/HC_Tableau_Server/views/${subUrl}`
-                window.viz = new window.tableau.Viz(subContainer, url, options)
-                window.viz.addEventListener(window.tableau.TableauEventName.STORY_POINT_SWITCH, yearFilter);
-                // this.iframeUrl = url
-                this.showMenu = false
+        /**
+         * 切换地址
+         */
+        changeLink(link){
+            //免登录
+            if(!link.origin){
+                this.isFree = true
+                this.$nextTick(() => {
+                    this.iframeUrl = link.url
+                })
+                return
+            }
+
+            //登录
+            this.isFree = false
+            this.$nextTick(() => {
+                this.$refs.vizContainer.innerHTML = ''
+                var subContainer = window.document.createElement('div')
+                this.$refs.vizContainer.appendChild(subContainer)
+                var options = {
+                    width: document.documentElement.clientWidth || document.body.clientWidth,
+                    height:document.documentElement.clientHeight|| document.body.clientHeight,
+                    hideTabs: true,
+                    onFirstInteractive: function () {
+                        yearFilter();
+                        setInterval(refreshReport, 60*1000*30);
+                    }
+                }
+                var subUrl = link.url.slice(link.url.indexOf('views/') + 6)
+                this.getToken(link.verify_account).then(token => {
+                    var url = `http://192.172.1.240/trusted/${token}/t/HC_Tableau_Server/views/${subUrl}`
+                    window.viz = new window.tableau.Viz(subContainer, url, options)
+                    window.viz.addEventListener(window.tableau.TableauEventName.STORY_POINT_SWITCH, yearFilter);
+                    this.showMenu = false
+                })
             })
         },
 
@@ -208,8 +282,9 @@ export default {
          * 切换主题
          */
         switchTheme(index){
+            clearInterval(this.timer)
             this.$store.dispatch('user/switchTheme', this.themeList[index]).then(() => {
-                this.init()
+                this.render()
             })
         },
 
@@ -293,6 +368,11 @@ function yearFilter(year) {
         .fl{
             position: absolute;
             left: 10px;
+            font-size: 16px;
+            img{
+                height: 50px;
+                margin-right: 10px;
+            }
         }
     }
     .el-menu-vertical-demo{
@@ -328,6 +408,38 @@ function yearFilter(year) {
             padding: 8px;
         }
     }
-
+    .user-info{
+        position: relative;
+        .dashboard{
+            position: absolute;
+            top: 49px;
+            right: -80px;
+            background-color: rgb(48, 49, 51);
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            width: 240px;
+            line-height: 30px;
+            border:1px solid #eee;
+            box-shadow: 0 0 5px #eee;
+            div{
+                display: flex;
+                justify-content: center;
+            }
+            div:nth-last-child(1){
+                margin-top: 10px;
+                border-top: 1px solid #ccc;
+            }
+        }
+    }
+}
+.empty{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
 }
 </style>

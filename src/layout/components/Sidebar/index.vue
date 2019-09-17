@@ -1,6 +1,9 @@
 <template>
-  <div :class="{'has-logo':showLogo}">
-    <logo v-if="showLogo" :collapse="isCollapse" />
+  <div>
+    <div class="logo-area">
+      <img src="@/assets/img/logo.png">
+      <b v-if="$store.state.app.sidebar.opened">数据管理平台</b>
+    </div>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -43,9 +46,7 @@ export default {
       }
       return path
     },
-    showLogo() {
-      return this.$store.state.settings.sidebarLogo
-    },
+
     variables() {
       return variables
     },
@@ -55,3 +56,22 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+.logo-area{
+  height: 50px;
+  line-height: 50px;
+  width: 100%;
+  background-color: #fff;
+  color:#000;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 16px;
+  img{
+    height: 36px;
+  }
+  b{
+    margin-left: 10px;
+  }
+}
+</style>
