@@ -11,7 +11,6 @@
                 <img src="@/assets/img/logo.png"/>
                 <b>数据管理系统</b>
             </div>
-            <div class="avatar" @click="fullscreen"><svg-icon icon-class="screen" style="font-size: 20px;"/> &nbsp 全屏</div>
             <el-submenu index="2">
                 <template slot="title">{{$store.state.user.themeInfo.theme_name}}</template>
                 <el-menu-item 
@@ -22,12 +21,13 @@
                     >{{item.theme_name}}
                 </el-menu-item>
             </el-submenu>
-            <div class="avatar" @click="() => { changeMenu(homeResources) }" ><svg-icon icon-class="home" style="font-size: 20px;"/> &nbsp 首页</div>
+            <div class="avatar" @click="fullscreen" title="全屏"><svg-icon icon-class="screen" style="font-size: 20px;"/></div>
+            <div class="avatar" @click="() => { changeMenu(homeResources) }" title="首页"><svg-icon icon-class="home" style="font-size: 20px;"/></div>
             <div class="avatar user-info" ref="dashboard">
-                <svg-icon icon-class="user" />  &nbsp 
-                <b>{{$store.state.user.userInfo.user_name}}</b> 
+                <svg-icon icon-class="user" />
                 <div class="dashboard" v-show="dashboard_visiable">
                     <div>工号：<b>{{$store.state.user.userInfo.user_no}}</b></div>
+                    <div>姓名：<b>{{$store.state.user.userInfo.user_name}}</b></div>
                     <div>公司：<b>{{$store.state.user.userInfo.company_desc ? $store.state.user.userInfo.company_desc : '未知'}}</b></div>
                     <div>部门：<b>{{$store.state.user.userInfo.department_desc ? $store.state.user.userInfo.department_desc : '未知'}}</b></div>
                     <div>当前IP：<b>{{ip_address}}</b></div>
@@ -35,7 +35,7 @@
                     <div> <el-button type="text" @click="login"><svg-icon icon-class="admin" style="font-size: 20px;"/> &nbsp 登录后台</el-button> </div>
                 </div>
             </div>
-            <div class="avatar" @click="logout"><svg-icon icon-class="logout" style="font-size: 20px;"/> &nbsp 退出</div>
+            <div class="avatar" @click="logout" title="退出"><svg-icon icon-class="logout" style="font-size: 20px;"/></div>
 
         </el-menu>
 
@@ -78,7 +78,7 @@
                 <p>当前页面为空，请联系管理员重新设置</p>
             </div>
         </template>
-        <div v-else ref="vizContainer" :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}"></div>
+        <div v-else ref="vizContainer" :style="{marginTop: (showTopBar ? '50px' : 0)}"></div>
     </div>
 </template>
 <script>
@@ -101,26 +101,26 @@ export default {
             ip_address: '',
             homeResources: null,
             isFree: false,
-            dashboard_visiable: false
+            dashboard_visiable: false,
+            isFull: false
         }
     },
 
     mounted(){
         this.render()
         this.init()
-        this.$refs.dashboard.addEventListener('mouseenter', () => {
-            this.dashboard_visiable = true
-        })
+        this.$refs.dashboard.addEventListener('mouseenter', this.switchDashboard.bind(this))
         this.$refs.dashboard.addEventListener('mouseover', () => {
             this.dashboard_visiable = true
         })
-        this.$refs.dashboard.addEventListener('mouseout', () => {
-            this.dashboard_visiable = false
-        })
+        this.$refs.dashboard.addEventListener('mouseout', this.switchDashboard.bind(this))
+
     },
 
     beforeDestroy(){
-        document.onfullscreenchange = null
+        this.$refs.dashboard.removeEventListener('mouseenter', this.switchDashboard)
+        this.$refs.dashboard.removeEventListener('mouseout', this.switchDashboard)
+        window.removeEventListener('resize', this.windowResizeHandler)
     },
 
     methods: {
@@ -129,11 +129,7 @@ export default {
          */
         init(){
             //监听全屏切换
-            document.onfullscreenchange = () => { 
-                if(!this.showTopBar){
-                    this.showTopBar = true
-                }
-            }
+            window.addEventListener('resize', this.windowResizeHandler)
             //获取该用户的所有主题
             getThemeByUserId({
                 id: this.$store.state.user.userInfo.id
@@ -154,6 +150,7 @@ export default {
                 if(!res.data){
                     this.isFree = true
                     this.iframeUrl = ''
+                    this.homeResources = {}
                     return
                 }
                 this.homeResources = res.data
@@ -161,8 +158,9 @@ export default {
             })
             //查询用户可以查看的资源
             getResourcesByUserId({
-                id: this.$store.state.user.userInfo.id,
                 theme_id: this.$store.state.user.themeInfo.id,
+                user_id: this.$store.state.user.userInfo.id,
+                isOwner: this.$store.state.user.userInfo.isOwner || this.$store.state.user.userInfo.admin ? 1 : 0,
                 tree: 1
             }).then(res => {
                 this.menuList = res.data
@@ -214,7 +212,7 @@ export default {
                 this.iframeUrl = ''
                 return
             }
-            document.title = resources.menu_title
+            document.title = `${resources.menu_title} - ${this.$store.state.user.themeInfo.theme_name} - 数据管理系统`
             clearInterval(this.timer)
             var links = resources.links, counter = 0
             if(!links || links.length == 0) return
@@ -241,7 +239,7 @@ export default {
             if(!link.origin){
                 this.isFree = true
                 this.$nextTick(() => {
-                    this.iframeUrl = link.url
+                    this.iframeUrl = link.url.startsWith('http') ? link.url : 'http://' + link.url
                 })
                 return
             }
@@ -252,9 +250,11 @@ export default {
                 this.$refs.vizContainer.innerHTML = ''
                 var subContainer = window.document.createElement('div')
                 this.$refs.vizContainer.appendChild(subContainer)
+                var documentWidth = document.documentElement.clientWidth || document.body.clientWidth,
+                    documentHeight = document.documentElement.clientHeight|| document.body.clientHeight
                 var options = {
-                    width: document.documentElement.clientWidth || document.body.clientWidth,
-                    height:document.documentElement.clientHeight|| document.body.clientHeight,
+                    width: documentWidth,
+                    height: documentHeight,
                     hideTabs: true,
                     onFirstInteractive: function () {
                         yearFilter();
@@ -271,11 +271,14 @@ export default {
             })
         },
 
+        /**
+         * 全屏
+         */
         fullscreen(){
             document.documentElement.requestFullscreen()
-            setTimeout(() => {
-                this.showTopBar = false
-            }, 500);
+            if(!this.isFree){
+                window.viz.setFrameSize(parseInt(window.screen.width), parseInt(window.screen.height))
+            }
         },
 
         /**
@@ -300,6 +303,18 @@ export default {
                     resolve(res.data)
                 })
             })
+        },
+        switchDashboard(){
+            this.dashboard_visiable = !this.dashboard_visiable
+        },
+        windowResizeHandler(){
+            var isFull = Math.abs(window.screen.height-window.document.documentElement.clientHeight) <= 17
+            if(isFull != this.isFull){
+                this.isFull = isFull
+                let status = !this.showTopBar
+                this.showTopBar = status
+                this.showMenu = status
+            }
         }
     }
 }

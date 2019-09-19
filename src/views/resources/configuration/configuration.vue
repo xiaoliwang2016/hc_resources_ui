@@ -8,19 +8,11 @@
 					<span class="grid">菜单类型</span>
 					<span class="grid">启用</span>
 					<span class="grid">公开</span>
-					<span class="grid">系统来源</span>
-					<!-- <span class="btn-group">
-						<el-button
-							type="success"
-							size="mini"
-							v-identify="{name: 'add_resources_2'}"
-							@click="() => createResources({type: 0, id: 0})">
-							创建一级菜单
-						</el-button>
-					</span> -->
+					<span class="grid">创建时间</span>
+					<span class="grid">操作</span>
 				</div>
 				<div class="row home">
-					<span class="title title_0">首页</span>
+					<span class="title title_0" style="text-align:left;padding-left: 20px;">首页</span>
 					<span class="grid">首页</span>
 					<span class="grid">
 						<el-switch
@@ -88,7 +80,7 @@
 							>
 							</el-switch>
 						</span>
-						<span class="grid">{{data.origin}}</span>
+						<span class="grid">{{parseTime(data.update_time, '{y}-{m}-{d}')}}</span>
 						<span class="btn-group">
 							<el-button
 								v-if="data.type == 1"
@@ -235,7 +227,7 @@
 import * as api from '@/api/resources'
 import * as accountApi from '@/api/account'
 import { getHomeInfo } from '@/api/theme'
-import { RecursiveSearch } from '@/utils/index'
+import { RecursiveSearch, parseTime } from '@/utils/index'
 import eventBus from '@/utils/eventBus'
 export default {
 	name: 'Configuration',
@@ -265,7 +257,7 @@ export default {
 	},
 
 	methods: {
-
+		parseTime,
 		init(){
 			accountApi.list({
 				theme_id: this.$store.state.admin.themeInfo.id
@@ -488,22 +480,26 @@ export default {
 		 * 验证账号是否正确
 		 */
 		verifyAccount(){
-			if(this.accountForm.password == '123'){
-				accountApi.save({
-					account: this.accountForm.account,
+			accountApi.authorize({
+				theme_id: this.$store.state.admin.themeInfo.id,
+				admin_id: this.$store.state.admin.userInfo.id,
+				credentials: {
+					name: this.accountForm.account,
 					password: this.accountForm.password,
-					theme_id: this.$store.state.admin.themeInfo.id,
-					admin_id: this.$store.state.admin.userInfo.id
-				}).then(() => {
-					accountApi.list({
-						theme_id: this.$store.state.admin.themeInfo.id
-					}).then(res => {
-						this.accountList = res.data
-					})
+					site: {
+						contentUrl: 'HC_Tableau_Server'
+					}
+				}
+			}).then(res =>{
+				accountApi.list({
+					theme_id: this.$store.state.admin.themeInfo.id
+				}).then(res => {
+					this.accountList = res.data
 				})
 				this.resourcesForm.links[this.selectIndex].verify_account = this.accountForm.account
 				this.innerVisible = false
-			}
+				
+			})
 		}
 	}
 }

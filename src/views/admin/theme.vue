@@ -182,6 +182,7 @@ export default {
                     this.existed = true
                     this.themeForm.manager = data.SNAME ? data.SNAME  : '佚名'
                     this.themeForm.department = data.ZZ_SIJI_DESC ? data.ZZ_SIJI_DESC  : '未知'
+                    this.themeForm.managerInfo = data
                 }else{
                     this.$message({
                         message: '系统中找不到该用户',

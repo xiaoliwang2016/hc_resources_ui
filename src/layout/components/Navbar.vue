@@ -8,19 +8,11 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <div class="avatar-wrapper" style="margin-right: 10px;" @click="backHome">
-        <span style="font-size: 24px; color:#606266;">
-          <svg-icon icon-class="back" />
-        </span>
-        <span style="font-size: 14px; position: relative; top: -2px; color:#606266;"><b>返回前台</b></span>
-      </div>
 
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <span style="font-size: 16px;margin-right: 5px;">
-            <svg-icon icon-class="switch" />
-          </span>
           <b>{{$store.state.admin.themeInfo.theme_name}}</b>
+          <i class="el-icon-arrow-down el-icon--right"></i>
         </div>
 
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -30,18 +22,33 @@
         </el-dropdown-menu>
       </el-dropdown>
 
-      <el-dropdown class="avatar-container" trigger="click">
+      <div class="avatar-wrapper" style="margin: 0 10px;" @click="backHome" title="返回前台">
+        <span style="font-size: 24px; color:#606266;">
+          <svg-icon icon-class="back" />
+        </span>
+        <span style="font-size: 14px; position: relative; top: -2px; color:#606266;"></span>
+      </div>
+
+      <el-dropdown class="avatar-container" trigger="hover">
         <div class="avatar-wrapper">
           <span style="font-size: 16px; ">
             <svg-icon icon-class="user" />
           </span>
           <span>
-            <b>{{$store.state.user.userInfo.user_name}}</b>
+            <b>{{$store.state.admin.userInfo.user_name}}</b>
           </span>
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item>
-            <span style="display:block;" @click="logout">退出</span>
+            <div class="admin-info">工号 : {{$store.state.admin.userInfo.user_no}}</div>
+            <div class="admin-info">姓名 : {{$store.state.admin.userInfo.user_name}}</div>
+            <div class="admin-info">公司 : {{$store.state.admin.userInfo.company_desc ? $store.state.admin.userInfo.company_desc : '未知'}}</div>
+            <div class="admin-info">职位 : {{$store.state.user.userInfo.job_desc ? $store.state.user.userInfo.job_desc : '未知'}}</div>
+          </el-dropdown-item>
+          <el-dropdown-item>
+            <div class="admin-info" style="height: 36px;border-top: 1px solid #eee;margin-top: 10px;">
+              <el-button type="text" @click="logout"><svg-icon icon-class="back"/> 退出</el-button>
+            </div>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -190,5 +197,11 @@ export default {
 .el-popper {
   margin-top: 5px !important;
   padding: 5px 0;
+}
+.admin-info{
+  text-align: center;
+  font-size: 14px;
+  height: 28px;
+  line-height: 28px;
 }
 </style>

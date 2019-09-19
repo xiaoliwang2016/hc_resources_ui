@@ -25,10 +25,14 @@ const actions = {
 		return new Promise((resolve, reject) => {
 			login({ user_no: user_no.trim(), password: password }).then(response => {
 				const { data } = response
-				commit('SET_USER_INFO', data)
-				commit('SET_THEME_INFO', data.themes[0])
 				//设置登录标识
 				setSymbol('home')
+				//多个主题，默认展示第一个
+				if(data.themes.length > 0){
+					commit('SET_THEME_INFO', data.themes[0])
+					data.isOwner = data.user_no == data.themes[0].manager_id
+				}
+				commit('SET_USER_INFO', data)
 				resolve()
 			}).catch(error => {
 				reject(error)
@@ -45,8 +49,11 @@ const actions = {
 	},
 
 	//切换主题
-	switchTheme({ commit }, themeInfo){
+	switchTheme({ commit, state }, themeInfo){
+		var userInfo = { ...state.userInfo }
+		userInfo.isOwner = userInfo.user_no == themeInfo.manager_id
 		commit('SET_THEME_INFO', themeInfo)
+		commit('SET_USER_INFO', userInfo)
 	},
 
 	// remove token

@@ -105,8 +105,8 @@ export default {
 
             //读取用户拥有资源ID
             userApi.getResourcesByUserId({
-                id: this.$route.query.id,
-                theme_id: this.$store.state.admin.themeInfo.id
+                theme_id: this.$store.state.admin.themeInfo.id,
+                user_id: this.$route.query.id
             }).then(res => {
                 var initResources = [], selectedResources = []
                 res.data.map(item => {
