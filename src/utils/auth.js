@@ -1,11 +1,11 @@
 import Cookies from 'js-cookie'
 
-export function checkSymbol(key) {
-  return Cookies.get(key) == '1'
+export function getSymbol(key) {
+  return Cookies.get(key)
 }
 
-export function setSymbol(key) {
-  return Cookies.set(key, '1')
+export function setSymbol(key, value) {
+  return Cookies.set(key, value)
 }
 
 export function removeSymbol(key) {

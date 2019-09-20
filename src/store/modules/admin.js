@@ -1,5 +1,5 @@
 import { login, logout } from '@/api/admin'
-import { checkSymbol, setSymbol, removeSymbol } from '@/utils/auth'
+import { setSymbol, removeSymbol } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import { storeMaker } from '@/utils/index'
 
@@ -28,11 +28,11 @@ const mutations = {
 const actions = {
 	// user login
 	login({ commit }, userInfo) {
-		const { user_no, password, theme_id } = userInfo
+		const { user_no, theme_id } = userInfo
 		return new Promise((resolve, reject) => {
-			login({ user_no: user_no.trim(), password, theme_id }).then(response => {
+			login({ user_no: user_no.trim(), theme_id }).then(response => {
 				const { data } = response
-				const theme = this.state.user.themeInfo
+				const theme = data.themes[0]
 				var roles = []
 				//判断是否位超级管理员
 				if(data.super == 1){
@@ -47,7 +47,8 @@ const actions = {
 				commit('SET_USER_ROLE', roles)
 				commit('SET_USER_ACCESS', data.accesses ? data.accesses : [])
 				//设置登录标识
-				setSymbol('admin')
+				setSymbol('admin_user_no', user_no)
+				setSymbol('admin_theme_id', theme_id)
 				resolve()
 			}).catch(error => {
 				reject(error)
@@ -61,7 +62,7 @@ const actions = {
 			logout(state.token).then(() => {
 				commit('SET_USER_INFO', {})
 				commit('SET_THEME_INFO', {})
-				removeSymbol('admin')
+				removeSymbol('admin_user_no')
 				resetRouter()
 				resolve()
 			}).catch(error => {
@@ -75,7 +76,7 @@ const actions = {
 		return new Promise(resolve => {
 			commit('SET_USER_INFO', {})
 			commit('SET_THEME_INFO', {})
-			removeSymbol('admin')
+			removeSymbol('admin_user_no')
 			resolve()
 		})
 	},

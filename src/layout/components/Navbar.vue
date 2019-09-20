@@ -8,7 +8,6 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <b>{{$store.state.admin.themeInfo.theme_name}}</b>
@@ -42,12 +41,21 @@
           <el-dropdown-item>
             <div class="admin-info">工号 : {{$store.state.admin.userInfo.user_no}}</div>
             <div class="admin-info">姓名 : {{$store.state.admin.userInfo.user_name}}</div>
-            <div class="admin-info">公司 : {{$store.state.admin.userInfo.company_desc ? $store.state.admin.userInfo.company_desc : '未知'}}</div>
-            <div class="admin-info">职位 : {{$store.state.user.userInfo.job_desc ? $store.state.user.userInfo.job_desc : '未知'}}</div>
+            <div
+              class="admin-info"
+            >公司 : {{$store.state.admin.userInfo.company_desc ? $store.state.admin.userInfo.company_desc : '未知'}}</div>
+            <div
+              class="admin-info"
+            >职位 : {{$store.state.user.userInfo.job_desc ? $store.state.user.userInfo.job_desc : '未知'}}</div>
           </el-dropdown-item>
           <el-dropdown-item>
-            <div class="admin-info" style="height: 36px;border-top: 1px solid #eee;margin-top: 10px;">
-              <el-button type="text" @click="logout"><svg-icon icon-class="back"/> 退出</el-button>
+            <div
+              class="admin-info"
+              style="height: 36px;border-top: 1px solid #eee;margin-top: 10px;"
+            >
+              <el-button type="text" @click="logout">
+                <svg-icon icon-class="back" />退出
+              </el-button>
             </div>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -72,19 +80,19 @@ export default {
   },
   data() {
     return {
-      	themeList: []
+      themeList: []
     };
   },
   computed: {
-		...mapGetters(["sidebar", "avatar"])
+    ...mapGetters(["sidebar", "avatar"])
   },
   methods: {
     toggleSideBar() {
-      	this.$store.dispatch("app/toggleSideBar");
+      this.$store.dispatch("app/toggleSideBar");
     },
     async logout() {
-		await this.$store.dispatch("admin/logout");
-		this.$router.push("/login");
+      await this.$store.dispatch("admin/logout")
+      this.$router.replace("/login")
     },
     /**
      * 删除主题
@@ -93,30 +101,32 @@ export default {
       this.$store.dispatch("user/switchTheme", themeInfo);
       this.$store
         .dispatch("admin/login", {
-			user_no: this.$store.state.admin.userInfo.user_no.toString(),
-			theme_id: themeInfo.id
+          user_no: this.$store.state.admin.userInfo.user_no.toString(),
+          theme_id: themeInfo.id
         })
         .then(() => {
           this.$store
             .dispatch(
-				"permission/generateRoutes",
-				this.$store.state.admin.roles
+              "permission/generateRoutes",
+              this.$store.state.admin.roles
             )
             .then(accessedRoutes => {
-				resetRouter();
-				//动态挂载路由
-				this.$router.addRoutes(accessedRoutes);
-				eventBus.$emit("change-theme");
-				this.$router.replace({
-					path: `/admin/menu/resources/configuration`
-				})
-            })
-        })
+              resetRouter();
+              //动态挂载路由
+              this.$router.addRoutes(accessedRoutes);
+              eventBus.$emit("change-theme");
+              this.$router.replace({
+                path: `/admin/menu/resources/configuration`
+              });
+            });
+        });
     },
     backHome() {
-      this.$router.replace({
-        path: '/'
-      })
+		this.$store.dispatch('admin/resetToken').then(() => {
+			this.$router.replace({
+				path: "/"
+			})
+		})
     }
   },
   mounted() {
@@ -198,7 +208,7 @@ export default {
   margin-top: 5px !important;
   padding: 5px 0;
 }
-.admin-info{
+.admin-info {
   text-align: center;
   font-size: 14px;
   height: 28px;

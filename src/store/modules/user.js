@@ -1,5 +1,5 @@
 import { login, logout } from '@/api/permission'
-import { checkSymbol, setSymbol, removeSymbol } from '@/utils/auth'
+import { setSymbol, removeSymbol } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import { storeMaker } from '@/utils/index'
 
@@ -25,8 +25,9 @@ const actions = {
 		return new Promise((resolve, reject) => {
 			login({ user_no: user_no.trim(), password: password }).then(response => {
 				const { data } = response
-				//设置登录标识
-				setSymbol('home')
+				//保存账号密码到cookie中
+				setSymbol('home_user_no', user_no)
+				setSymbol('home_psd', password)
 				//多个主题，默认展示第一个
 				if(data.themes.length > 0){
 					commit('SET_THEME_INFO', data.themes[0])
@@ -44,7 +45,8 @@ const actions = {
 	logout({ commit, state }) {
 		commit('SET_USER_INFO', {})
 		commit('SET_THEME_INFO', {})
-		removeSymbol('home')
+		removeSymbol('home_user_no')
+		removeSymbol('home_password')
 		resetRouter()
 	},
 
@@ -61,7 +63,8 @@ const actions = {
 		return new Promise(resolve => {
 			commit('SET_USER_INFO', {})
 			commit('SET_THEME_INFO', {})
-			removeSymbol('home')
+			removeSymbol('home_user_no')
+			removeSymbol('home_password')
 			resolve()
 		})
 	}

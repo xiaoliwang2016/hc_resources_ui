@@ -170,7 +170,7 @@ export default {
         parseTime,
         render(){
             api.list({
-                theme_id: this.$store.state.user.themeInfo.id
+                theme_id: this.$store.state.admin.themeInfo.id
             }).then(res => {
                 this.userList = res.data
             })
