@@ -36,45 +36,49 @@
                 </div>
             </div>
             <div class="avatar" @click="logout" title="退出"><svg-icon icon-class="logout" style="font-size: 20px;"/></div>
-
         </el-menu>
 
-        <el-menu
-            default-active="2"
-            class="el-menu-vertical-demo"
-            background-color="#303133"
-            text-color="#F2F6FC" 
-            active-text-color="#FFFFFF"
-            :unique-opened="true"
-            :style="{left: showMenu ? 0 : '-250px', top: showTopBar ? '50px' : 0, height: showTopBar ? 'calc(100vh - 50px)' : '100vh'}">
-            <el-menu-item>
-                <el-submenu :index="index.toString()" v-for="(item, index) in menuList" :key="item.id">
-                    <template slot="title">
-                        <span>{{item.menu_title}}</span>
-                    </template>   
-                    <el-submenu :index="index + '-' + subIndex" v-for="(subItem, subIndex) in item.children" :key="subItem.id">
-                        <template slot="title">{{subItem.menu_title}}</template>
-                        <el-menu-item 
-                            v-for="(cellItem, cellIndex) in subItem.children" 
-                            @click="() => changeMenu(cellItem)" 
-                            :index="index + '-' + subIndex + '-' + cellIndex" 
-                            :key="cellItem.id">
-                        {{cellItem.menu_title}}</el-menu-item>
+        <div ref="menuContainer" class="trigger-zoom" :style="{top: showTopBar ? '50px' : 0, height: showTopBar ? 'calc(100vh - 50px)' : '100vh'}">
+            <el-menu
+                default-active="2"
+                class="vertical-menu"
+                background-color="#303133"
+                text-color="#F2F6FC" 
+                active-text-color="#FFFFFF"
+                :unique-opened="true"
+                :style="{left: showMenu ? 0 : '-250px'}">
+                <div class="top_menu">
+                    <svg-icon @click="fixMenu" icon-class="fold" style="font-size: 24px;float: right;" v-if="isFixed"/>
+                    <svg-icon @click="fixMenu" icon-class="fix" style="font-size: 24px;float: right;" v-else/>
+                </div>
+                <el-menu-item>
+                    <el-submenu :index="index.toString()" v-for="(item, index) in menuList" :key="item.id">
+                        <template slot="title">
+                            <span>{{item.menu_title}}</span>
+                        </template>   
+                        <el-submenu :index="index + '-' + subIndex" v-for="(subItem, subIndex) in item.children" :key="subItem.id">
+                            <template slot="title">{{subItem.menu_title}}</template>
+                            <el-menu-item 
+                                v-for="(cellItem, cellIndex) in subItem.children" 
+                                @click="() => changeMenu(cellItem)" 
+                                :index="index + '-' + subIndex + '-' + cellIndex" 
+                                :key="cellItem.id">
+                            {{cellItem.menu_title}}</el-menu-item>
+                        </el-submenu>
                     </el-submenu>
-                </el-submenu>
-            </el-menu-item>
+                </el-menu-item>
+                <!-- <div class="icon-1" @click="() => showMenu = !showMenu">
+                    <i v-if="showMenu" class="el-icon-arrow-left"></i>
+                    <i v-else class="el-icon-arrow-right"></i>
+                </div> -->
+            </el-menu>
+        </div>
 
-            <div class="icon-1" @click="() => showMenu = !showMenu">
-                <i v-if="showMenu" class="el-icon-arrow-left"></i>
-                <i v-else class="el-icon-arrow-right"></i>
-            </div>
-
-        </el-menu>
         <!-- 无需登录地址 通过ifrmae直接展示 -->
         <template v-if="isFree">
             <iframe v-if="iframeUrl" :style="{width: '100vw', height:(showTopBar ? 'calc(100vh - 50px)' : '100vh'), marginTop: (showTopBar ? '50px' : 0)}" :src="iframeUrl" frameborder="0"></iframe>
             <div v-else class="empty">
-                <svg-icon icon-class="empty" style="font-size: 80px;"/>
+                <svg-icon icon-class="empty" style="font-size: 80px;float: right;"/>
                 <p>当前页面为空，请联系管理员重新设置</p>
             </div>
         </template>
@@ -102,24 +106,22 @@ export default {
             homeResources: null,
             isFree: false,
             dashboard_visiable: false,
-            isFull: false
+            isFull: false,
+            isFixed: false
         }
     },
 
     mounted(){
         this.render()
         this.init()
-        this.$refs.dashboard.addEventListener('mouseenter', this.switchDashboard.bind(this))
-        this.$refs.dashboard.addEventListener('mouseover', () => {
-            this.dashboard_visiable = true
-        })
-        this.$refs.dashboard.addEventListener('mouseout', this.switchDashboard.bind(this))
 
     },
 
     beforeDestroy(){
-        this.$refs.dashboard.removeEventListener('mouseenter', this.switchDashboard)
-        this.$refs.dashboard.removeEventListener('mouseout', this.switchDashboard)
+        this.$refs.dashboard.onmouseenter = null
+        this.$refs.dashboard.onmouseleave = null
+        this.$refs.menuContainer.onmouseenter = null
+        this.$refs.menuContainer.onmouseleave = null
         window.removeEventListener('resize', this.windowResizeHandler)
     },
 
@@ -130,6 +132,10 @@ export default {
         init(){
             //监听全屏切换
             window.addEventListener('resize', this.windowResizeHandler)
+            this.$refs.dashboard.onmouseenter = this.switchDashboard.bind(this)
+            this.$refs.dashboard.onmouseleave = this.switchDashboard.bind(this)
+            this.$refs.menuContainer.onmouseenter = this.switchMenuStat.bind(this, true)
+            this.$refs.menuContainer.onmouseleave = this.switchMenuStat.bind(this, false)
             //获取该用户的所有主题
             getThemeByUserId({
                 id: this.$store.state.user.userInfo.id
@@ -276,9 +282,6 @@ export default {
          */
         fullscreen(){
             document.documentElement.requestFullscreen()
-            if(!this.isFree){
-                window.viz.setFrameSize(parseInt(window.screen.width), parseInt(window.screen.height))
-            }
         },
 
         /**
@@ -307,13 +310,36 @@ export default {
         switchDashboard(){
             this.dashboard_visiable = !this.dashboard_visiable
         },
+        switchMenuStat(stat){
+            this.showMenu = stat
+        },
+        //固定/取消固定 左边菜单栏
+        fixMenu(){
+            if(this.isFixed){
+                this.isFixed = false
+                this.$refs.menuContainer.onmouseenter = this.switchMenuStat.bind(this, true)
+                this.$refs.menuContainer.onmouseleave = this.switchMenuStat.bind(this, false)
+            }else{
+                this.isFixed = true
+                this.$refs.menuContainer.onmouseenter = null
+                this.$refs.menuContainer.onmouseleave = null
+            }
+        },
         windowResizeHandler(){
             var isFull = Math.abs(window.screen.height-window.document.documentElement.clientHeight) <= 17
             if(isFull != this.isFull){
                 this.isFull = isFull
-                let status = !this.showTopBar
-                this.showTopBar = status
-                this.showMenu = status
+                this.showTopBar = !isFull
+                this.showMenu = !isFull || this.isFixed
+                if(!this.isFree){
+                    if(isFull){
+                        window.viz.setFrameSize(parseInt(window.screen.width), parseInt(window.screen.height))
+                    }else{
+                        var documentWidth = document.documentElement.clientWidth || document.body.clientWidth,
+                            documentHeight = document.documentElement.clientHeight|| document.body.clientHeight
+                        window.viz.setFrameSize(parseInt(documentWidth), parseInt(documentHeight))
+                    }
+                }
             }
         }
     }
@@ -390,13 +416,21 @@ function yearFilter(year) {
             }
         }
     }
-    .el-menu-vertical-demo{
-        padding-bottom: 50px;
-        width: 250px;
+    .trigger-zoom{
         position: fixed;
+        width: 250px;
         left: 0;
-        transition: left 1s;
+        height: 100vh;
+        .vertical-menu{
+            position: absolute;
+            padding-bottom: 50px;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            transition: left 1s;
+        }
     }
+
     .icon-1{
         display: flex;
         justify-content: center;
@@ -446,6 +480,11 @@ function yearFilter(year) {
                 border-top: 1px solid #ccc;
             }
         }
+    }
+    .top_menu{
+        height: 40px;
+        padding: 10px 25px;
+        cursor: pointer;
     }
 }
 .empty{
