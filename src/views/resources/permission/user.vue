@@ -271,6 +271,24 @@ export default {
                 }
             })
         },
+        remove(user_id){
+            this.$confirm('确认删除此用户吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                api.removeUser({
+                    theme_id: this.$store.state.user.themeInfo.id,
+                    user_id
+                }).then(res => {
+                    this.$message({
+                        message: '员工删除成功',
+                        type: 'success'
+                    })
+                    this.render()
+                })
+            })
+        },  
         clear(){
             this.existed = false
             this.userForm = {

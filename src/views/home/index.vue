@@ -272,7 +272,9 @@ export default {
                     var url = `http://192.172.1.240/trusted/${token}/t/HC_Tableau_Server/views/${subUrl}`
                     window.viz = new window.tableau.Viz(subContainer, url, options)
                     window.viz.addEventListener(window.tableau.TableauEventName.STORY_POINT_SWITCH, yearFilter);
-                    this.showMenu = false
+                    if(!this.isFixed){
+                        this.showMenu = false
+                    }
                 })
             })
         },

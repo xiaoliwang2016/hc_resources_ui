@@ -23,7 +23,7 @@
 
       <div class="avatar-wrapper" style="margin: 0 10px;" @click="backHome" title="返回前台">
         <span style="font-size: 24px; color:#606266;">
-          <svg-icon icon-class="back" />
+          <svg-icon icon-class="home-black" />
         </span>
         <span style="font-size: 14px; position: relative; top: -2px; color:#606266;"></span>
       </div>

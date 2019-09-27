@@ -44,7 +44,7 @@
                 width="180">
                 <template slot-scope="scope">
                     <el-button @click="toAuthorize(scope.row)" type="text" size="small" v-identify="{name: 'edit_role'}">权限设置</el-button>
-                    <el-button type="text" size="small" v-identify="{name: 'delete_role'}">删除</el-button>
+                    <el-button type="text" size="small" v-identify="{name: 'delete_role'}" @click="remove(scope.row.id)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -163,20 +163,14 @@ export default {
          */
         remove(id){
             this.$confirm('确认要删除该角色吗?').then(() => {
-                api.listUserByRoleId({
+                api.removeRole({
                     role_id: id
                 }).then(res => {
-                    console.log(res);
-                    
-                })
-                this.$message({
-                    type: 'success',
-                    message: '删除成功!'
-                })
-            }).catch(() => {
-                this.$message({
-                    type: 'info',
-                    message: '已取消删除'
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功!'
+                    })
+                    this.render()
                 })
             })
         } 

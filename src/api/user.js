@@ -55,3 +55,11 @@ export function searchUser(params){
 		params
 	})
 }
+
+export function removeUser(data){
+	return request({
+		url: '/admin/user/delete',
+		method: 'post',
+		data
+	})
+}

@@ -39,3 +39,11 @@ export function listUserByRoleId(){
         params
     })
 }
+
+export function removeRole(data){
+	return request({
+		url: '/admin/role/delete',
+		method: 'post',
+		data
+	})
+}

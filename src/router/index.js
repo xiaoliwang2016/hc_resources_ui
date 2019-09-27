@@ -106,6 +106,48 @@ export const constantRoutes = [
 			}
 		]
 	},
+
+	{
+		path: '/admin/service',
+		name: 'Service',
+		component: Layout,
+		meta: { title: '服务', icon: 'peoples' },
+		children: [
+			{
+				path: 'develop',
+				component: () => import('@/views/service/develop'),
+				name: 'ServiceDevelop',
+				meta: { title: '服务开发'}
+			},
+			{
+				path: 'manage',
+				component: () => import('@/views/service/manage'),
+				name: 'ServiceManage',
+				meta: { title: '服务管理'}
+			},
+		]
+	},
+
+	{
+		path: '/admin/analysis',
+		name: 'Analysis',
+		component: Layout,
+		meta: { title: '分析', icon: 'analysis' },
+		children: [
+			{
+				path: 'data',
+				component: () => import('@/views/service/develop'),
+				name: 'AnalysisData',
+				meta: { title: '自定义数据'}
+			},
+			{
+				path: 'report',
+				component: () => import('@/views/service/manage'),
+				name: 'AnalysisReport',
+				meta: { title: '自定义报表'}
+			},
+		]
+	},
 	
 	// 404 page must be placed at the end !!!
 	{ path: '*', redirect: '/404', hidden: true }
