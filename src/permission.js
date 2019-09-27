@@ -4,6 +4,7 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getSymbol } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
+import { getResourcesDetail } from '@/api/resources'
 
 // function existRouter(target, sources){
 // 	var exists = false
@@ -42,6 +43,7 @@ router.beforeEach(async (to, from, next) => {
 	if(to.path == '/'){
 		//cookie中有登录标识
 		if(getSymbol('home_user_no')){
+
 			//store中用户数据丢失，重新调用登录
 			if(JSON.stringify(store.state.user.userInfo) == '{}'){
 				await store.dispatch('user/login', {

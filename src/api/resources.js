@@ -39,3 +39,11 @@ export function assignToUser(data){
         data
     }) 
 }
+
+export function getResourcesDetail(params){
+    return request({
+        url: '/admin/resources/detail',
+        method: 'get',
+        params
+    })
+}

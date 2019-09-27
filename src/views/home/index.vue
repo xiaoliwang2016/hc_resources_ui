@@ -86,7 +86,7 @@
     </div>
 </template>
 <script>
-import { getResourcesTree } from '@/api/resources'
+import { getResourcesTree, getResourcesDetail } from '@/api/resources'
 import { getThemeByUserId, getResourcesByUserId } from '@/api/user'
 import { getHomeInfo } from '@/api/theme'
 import { getToken } from '@/api/permission'
@@ -114,7 +114,6 @@ export default {
     mounted(){
         this.render()
         this.init()
-
     },
 
     beforeDestroy(){
@@ -152,7 +151,7 @@ export default {
             //获取首页信息
             getHomeInfo({
                 theme_id: this.$store.state.user.themeInfo.id
-            }).then(res => {
+            }).then(async res => {
                 if(!res.data){
                     this.isFree = true
                     this.iframeUrl = ''
@@ -160,8 +159,17 @@ export default {
                     return
                 }
                 this.homeResources = res.data
-                this.changeMenu(res.data)
+				if(window.location.hash.indexOf("id=") != -1){
+					var resources_id = window.location.hash.slice(window.location.hash.indexOf("id=") + 3)
+                    var res = await getResourcesDetail({ id: resources_id })
+                    console.log(res.data);
+                    this.changeMenu(res.data)
+				}else{
+                    this.changeMenu(res.data)
+                }
+                
             })
+
             //查询用户可以查看的资源
             getResourcesByUserId({
                 theme_id: this.$store.state.user.themeInfo.id,
@@ -212,6 +220,7 @@ export default {
          * 切换菜单
          */
         changeMenu(resources){
+            window.location.hash = `#/?id=${resources.id}`
             //当前选线为空
             if(!resources){
                 this.isFree = true
